@@ -5,6 +5,8 @@ extern crate quote;
 #[macro_use]
 extern crate syn;
 
+use std::sync::Arc;
+
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use proc_macro_error::{abort, proc_macro_error};
@@ -46,15 +48,18 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
             let ser_name = field.attrs.name.serialize.as_str();
 
             quote! {
-                &format!("{}: '{}',", #ser_name, self.#org_name)
+                &format!("{}: '{}',", #ser_name, self.source.#org_name)
             }
         })
         .collect::<Vec<_>>();
 
     let name = &ast.ident;
+
     let output = quote!(
-        impl #name {
-            fn create(&self) -> String {
+        use cypher::{QueryTrait, CreateTrait, ReturnTrait};
+
+        impl QueryTrait for Query<#name> {
+            fn create(&mut self) -> Box<dyn CreateTrait> {
                 let mut props = String::new();
                 #(
                     props.push_str(
@@ -63,11 +68,48 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
                 )*
                 props.pop();
 
+                if props.len() > 0 {
+                    self.state = format!("CREATE (n:{} {{ {} }})", stringify!(#name), props);
+                } else {
+                    self.state = format!("CREATE (n:{})", stringify!(#name));
+                }
 
-                format!("CREATE (n:{} {{ {} }})", stringify!(#name), props)
 
+                // self.source
+
+                Box::new(self.clone())
             }
         }
+
+        impl CreateTrait for Query<#name> {
+            fn r#return(&mut self) -> Box<dyn ReturnTrait> {
+                Box::new(self.clone())
+            }
+        }
+
+        impl ReturnTrait for Query<#name> {
+            fn finalize(&self) -> String {
+                self.state.clone()
+            }
+        }
+
+        // impl #name {
+        //     fn test(&self) -> String {
+        //         let mut props = String::new();
+        //         #(
+        //             props.push_str(
+        //                 #variants
+        //             );
+        //         )*
+        //         props.pop();
+
+        //         if props.len() > 0 {
+        //             format!("CREATE (n:{} {{ {} }})", stringify!(#name), props)
+        //         } else {
+        //             format!("CREATE (n:{})", stringify!(#name))
+        //         }
+        //     }
+        // }
     );
 
     output
