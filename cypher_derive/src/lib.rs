@@ -1,12 +1,16 @@
 mod core;
 
 #[macro_use]
+mod fragment;
+
+#[macro_use]
 extern crate quote;
 #[macro_use]
 extern crate syn;
 
 use std::sync::Arc;
 
+use fragment::{Fragment, Stmts};
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use proc_macro_error::{abort, proc_macro_error};
@@ -30,15 +34,6 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
         None => todo!(),
     };
 
-    // let ff = cont.data.1;
-
-    // let fields = collect_fields(&ast);
-
-    // let relevant_fields = fields
-    //     .iter()
-    //     .filter(|field| !field.is_phantom_data())
-    //     .filter(|field| !field.contains_tag(&parse_quote!(super_derive), &parse_quote!(skip)));
-
     let variants = cont
         .data
         .1
@@ -55,11 +50,14 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
 
     let name = &ast.ident;
 
+    let finalize = Stmts(finalize_query_method());
+
     let output = quote!(
-        use cypher::{QueryTrait, CreateTrait, ReturnTrait};
+        use cypher::{QueryTrait, WriteTrait, ReturnTrait};
+
 
         impl QueryTrait for Query<#name> {
-            fn create(&mut self) -> Box<dyn CreateTrait> {
+            fn create(&mut self) -> Box<dyn WriteTrait> {
                 let mut props = String::new();
                 #(
                     props.push_str(
@@ -74,42 +72,46 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
                     self.state = format!("CREATE (n:{})", stringify!(#name));
                 }
 
-
-                // self.source
-
                 Box::new(self.clone())
+            }
+
+            fn delete(&mut self, detach: bool) -> Box<dyn WriteTrait> {
+                if detach {
+                    self.push_to_state(&format!("MATCH ({}:{})\nDETACH DELETE {}",
+                        self.nv(),
+                        stringify!(#name),
+                        self.nv()
+                    ));
+
+                    Box::new(self.clone())
+                } else {
+                    self.push_to_state(&format!("MATCH ({}:{})\nDELETE {}",
+                        self.nv(),
+                        stringify!(#name),
+                        self.nv()
+                    ));
+
+                    Box::new(self.clone())
+                }
             }
         }
 
-        impl CreateTrait for Query<#name> {
+        impl WriteTrait for Query<#name> {
+
             fn r#return(&mut self) -> Box<dyn ReturnTrait> {
+                self.push_to_state(&format!("\nRETURN {}", self.nv()));
+                Box::new(self.clone())
+            }
+
+            fn return_as(&mut self, value: &str) -> Box<dyn ReturnTrait> {
+                self.push_to_state(&format!("\nRETURN {} AS {}", self.nv(), value));
                 Box::new(self.clone())
             }
         }
 
         impl ReturnTrait for Query<#name> {
-            fn finalize(&self) -> String {
-                self.state.clone()
-            }
+            #finalize
         }
-
-        // impl #name {
-        //     fn test(&self) -> String {
-        //         let mut props = String::new();
-        //         #(
-        //             props.push_str(
-        //                 #variants
-        //             );
-        //         )*
-        //         props.pop();
-
-        //         if props.len() > 0 {
-        //             format!("CREATE (n:{} {{ {} }})", stringify!(#name), props)
-        //         } else {
-        //             format!("CREATE (n:{})", stringify!(#name))
-        //         }
-        //     }
-        // }
     );
 
     output
@@ -132,4 +134,12 @@ fn collect_fields(ast: &syn::DeriveInput) -> Vec<syn::Field> {
             "#[derive(Cypherize)] can only be used with structs"
         ),
     }
+}
+
+fn finalize_query_method() -> Fragment {
+    quote_block!(
+        fn finalize(&self) -> String {
+            self.state.clone()
+        }
+    )
 }
