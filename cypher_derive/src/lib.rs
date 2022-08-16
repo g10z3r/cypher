@@ -41,77 +41,99 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
         .map(|field| {
             let org_name = field.original.ident.as_ref().unwrap();
             let ser_name = field.attrs.name.serialize.as_str();
+            let tt = field.original.type_name();
 
             quote! {
-                &format!("{}: '{}',", #ser_name, self.source.#org_name)
+                stringify!(#ser_name).to_string(),
+                PropType::from_type(
+                    stringify!(#tt),
+                    Some(Box::new(self.#org_name.clone()))
+                )
             }
         })
         .collect::<Vec<_>>();
 
     let name = &ast.ident;
 
-    let finalize = Stmts(finalize_query_method());
-
     let output = quote!(
-        use cypher::{QueryTrait, WriteTrait, ReturnTrait};
+        use cypher::{CypherTrait, QueryTrait, Query};
+        use cypher::node::{Node, Props, PropType};
 
 
-        impl QueryTrait for Query<#name> {
-            fn create(&mut self) -> Box<dyn WriteTrait> {
-                let mut props = String::new();
+        impl CypherTrait for #name {
+            fn cypher(&self) -> Box<dyn QueryTrait> {
+                use std::sync::Arc;
+
+                let mut mp = Props::new();
                 #(
-                    props.push_str(
-                        #variants
-                    );
+                    mp.insert(#variants);
                 )*
-                props.pop();
 
-                if props.len() > 0 {
-                    self.state = format!("CREATE (n:{} {{ {} }})", stringify!(#name), props);
-                } else {
-                    self.state = format!("CREATE (n:{})", stringify!(#name));
-                }
+                let node = Node::new(mp, vec![String::from(stringify!(#name))]);
+                let q = Query::default(Arc::new(node));
 
-                Box::new(self.clone())
-            }
-
-            fn delete(&mut self, detach: bool) -> Box<dyn WriteTrait> {
-                if detach {
-                    self.push_to_state(&format!("MATCH ({}:{})\nDETACH DELETE {}",
-                        self.nv(),
-                        stringify!(#name),
-                        self.nv()
-                    ));
-
-                    Box::new(self.clone())
-                } else {
-                    self.push_to_state(&format!("MATCH ({}:{})\nDELETE {}",
-                        self.nv(),
-                        stringify!(#name),
-                        self.nv()
-                    ));
-
-                    Box::new(self.clone())
-                }
+                Box::new(q)
             }
         }
 
-        impl WriteTrait for Query<#name> {
 
-            fn r#return(&mut self) -> Box<dyn ReturnTrait> {
-                self.push_to_state(&format!("\nRETURN {}", self.nv()));
-                Box::new(self.clone())
-            }
 
-            fn return_as(&mut self, value: &str) -> Box<dyn ReturnTrait> {
-                self.push_to_state(&format!("\nRETURN {} AS {}", self.nv(), value));
-                Box::new(self.clone())
-            }
-        }
+        // impl QueryTrait for Query<#name> {
+        //     fn create(&mut self) -> Box<dyn WriteTrait> {
+        //         let mut props = String::new();
+        //         #(
+        //             props.push_str(
+        //                 #variants
+        //             );
+        //         )*
+        //         props.pop();
 
-        impl ReturnTrait for Query<#name> {
-            #finalize
-        }
+        //         if props.len() > 0 {
+        //             self.state = format!("CREATE (n:{} {{ {} }})", stringify!(#name), props);
+        //         } else {
+        //             self.state = format!("CREATE (n:{})", stringify!(#name));
+        //         }
+
+        //         Box::new(self.clone())
+        //     }
+
+        //     fn delete(&mut self, detach: bool) -> Box<dyn WriteTrait> {
+        //         if detach {
+        //             self.push_to_state(&format!("MATCH ({}:{})\nDETACH DELETE {}",
+        //                 self.nv(),
+        //                 stringify!(#name),
+        //                 self.nv()
+        //             ));
+
+        //             Box::new(self.clone())
+        //         } else {
+        //             self.push_to_state(&format!("MATCH ({}:{})\nDELETE {}",
+        //                 self.nv(),
+        //                 stringify!(#name),
+        //                 self.nv()
+        //             ));
+
+        //             Box::new(self.clone())
+        //         }
+        //     }
+        // }
+
+        // impl WriteTrait for Query<#name> {
+
+        //     fn r#return(&mut self) -> Box<dyn ReturnTrait> {
+        //         self.push_to_state(&format!("\nRETURN {}", self.nv()));
+        //         Box::new(self.clone())
+        //     }
+
+        //     fn return_as(&mut self, value: &str) -> Box<dyn ReturnTrait> {
+        //         self.push_to_state(&format!("\nRETURN {} AS {}", self.nv(), value));
+        //         Box::new(self.clone())
+        //     }
+        // }
+
+        // impl ReturnTrait for Query<#name> {
+        //     #finalize
+        // }
     );
 
     output
