@@ -8,15 +8,9 @@ extern crate quote;
 #[macro_use]
 extern crate syn;
 
-use std::sync::Arc;
-
-use fragment::{Fragment, Stmts};
 use proc_macro::TokenStream;
-use proc_macro2::Span;
-use proc_macro_error::{abort, proc_macro_error};
-use proc_macro_roids::{DeriveInputStructExt, FieldExt, IdentExt};
-use quote::ToTokens;
-use syn::{spanned::Spanned, DeriveInput, Ident};
+use proc_macro_roids::FieldExt;
+use syn::DeriveInput;
 
 use crate::core::{ast, context::Context};
 
@@ -41,13 +35,29 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
         .map(|field| {
             let org_name = field.original.ident.as_ref().unwrap();
             let ser_name = field.attrs.name.serialize.as_str();
-            let tt = field.original.type_name();
+            let mut _type = &field.original.ty;
+
+            let prop_value =
+                if let Some(type_in_option) = ty_inner_type("Option", &field.original.ty) {
+                    _type = type_in_option;
+                                       
+                    quote!(
+                        if self.#org_name.is_some() {
+                            Some(Box::new(self.#org_name.clone().unwrap()))
+                        } else {
+                            None
+                        }
+                    )
+                } else {
+                    quote!(Some(Box::new(self.#org_name.clone())))
+                };
 
             quote! {
                 stringify!(#ser_name).to_string(),
                 PropType::from_type(
-                    stringify!(#tt),
-                    Some(Box::new(self.#org_name.clone()))
+                    stringify!(#_type),
+                    #prop_value
+
                 )
             }
         })
@@ -56,9 +66,9 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
     let name = &ast.ident;
 
     let output = quote!(
-        use cypher::{CypherTrait, QueryTrait, Query};
+        use cypher::CypherTrait;
+        use cypher::query::{QueryTrait, Query};
         use cypher::node::{Node, Props, PropType};
-
 
         impl CypherTrait for #name {
             fn cypher(&self) -> Box<dyn QueryTrait> {
@@ -139,29 +149,49 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
     output
 }
 
-fn collect_fields(ast: &syn::DeriveInput) -> Vec<syn::Field> {
-    match ast.data {
-        syn::Data::Struct(syn::DataStruct { ref fields, .. }) => {
-            if fields.iter().any(|field| field.ident.is_none()) {
-                abort!(
-                    fields.span(),
-                    "struct has unnamed fields";
-                    help = "#[derive(Cypherize)] can only be used on structs with named fields";
-                );
-            }
-            fields.iter().cloned().collect::<Vec<_>>()
+fn ty_inner_type<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<&'a syn::Type> {
+    if let syn::Type::Path(ref p) = ty {
+        if p.path.segments.len() != 1 || p.path.segments[0].ident != wrapper {
+            return None;
         }
-        _ => abort!(
-            ast.span(),
-            "#[derive(Cypherize)] can only be used with structs"
-        ),
+
+        if let syn::PathArguments::AngleBracketed(ref inner_ty) = p.path.segments[0].arguments {
+            if inner_ty.args.len() != 1 {
+                return None;
+            }
+
+            let inner_ty = inner_ty.args.first().unwrap();
+            if let syn::GenericArgument::Type(ref t) = inner_ty {
+                return Some(t);
+            }
+        }
     }
+    None
 }
 
-fn finalize_query_method() -> Fragment {
-    quote_block!(
-        fn finalize(&self) -> String {
-            self.state.clone()
-        }
-    )
-}
+// fn collect_fields(ast: &syn::DeriveInput) -> Vec<syn::Field> {
+//     match ast.data {
+//         syn::Data::Struct(syn::DataStruct { ref fields, .. }) => {
+//             if fields.iter().any(|field| field.ident.is_none()) {
+//                 abort!(
+//                     fields.span(),
+//                     "struct has unnamed fields";
+//                     help = "#[derive(Cypherize)] can only be used on structs with named fields";
+//                 );
+//             }
+//             fields.iter().cloned().collect::<Vec<_>>()
+//         }
+//         _ => abort!(
+//             ast.span(),
+//             "#[derive(Cypherize)] can only be used with structs"
+//         ),
+//     }
+// }
+
+// fn finalize_query_method() -> Fragment {
+//     quote_block!(
+//         fn finalize(&self) -> String {
+//             self.state.clone()
+//         }
+//     )
+// }
