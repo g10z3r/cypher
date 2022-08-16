@@ -9,14 +9,13 @@ extern crate quote;
 extern crate syn;
 
 use proc_macro::TokenStream;
-use proc_macro_roids::FieldExt;
 use syn::DeriveInput;
 
 use crate::core::{ast, context::Context};
 
 #[proc_macro_derive(Cypherize, attributes(cypher))]
 pub fn derive_cypherize(input: TokenStream) -> TokenStream {
-    let mut input = parse_macro_input!(input as DeriveInput);
+    let input = parse_macro_input!(input as DeriveInput);
 
     impl_cypherize(&input).into()
 }
@@ -40,7 +39,7 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
             let prop_value =
                 if let Some(type_in_option) = ty_inner_type("Option", &field.original.ty) {
                     _type = type_in_option;
-                                       
+
                     quote!(
                         if self.#org_name.is_some() {
                             Some(Box::new(self.#org_name.clone().unwrap()))
@@ -168,30 +167,3 @@ fn ty_inner_type<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<&'a syn::Type> 
     }
     None
 }
-
-// fn collect_fields(ast: &syn::DeriveInput) -> Vec<syn::Field> {
-//     match ast.data {
-//         syn::Data::Struct(syn::DataStruct { ref fields, .. }) => {
-//             if fields.iter().any(|field| field.ident.is_none()) {
-//                 abort!(
-//                     fields.span(),
-//                     "struct has unnamed fields";
-//                     help = "#[derive(Cypherize)] can only be used on structs with named fields";
-//                 );
-//             }
-//             fields.iter().cloned().collect::<Vec<_>>()
-//         }
-//         _ => abort!(
-//             ast.span(),
-//             "#[derive(Cypherize)] can only be used with structs"
-//         ),
-//     }
-// }
-
-// fn finalize_query_method() -> Fragment {
-//     quote_block!(
-//         fn finalize(&self) -> String {
-//             self.state.clone()
-//         }
-//     )
-// }
