@@ -1,31 +1,42 @@
 use std::{collections::HashMap, fmt::Display};
 
 pub enum PropType {
-    Int(Option<Box<dyn Display + 'static>>),
-    String(Option<Box<dyn Display + 'static>>),
+    Int(Box<dyn Display + 'static>),
+    String(Box<dyn Display + 'static>),
+    Null,
+}
+
+impl PartialEq for PropType {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Int(_), Self::Int(_)) => true,
+            (Self::String(_), Self::String(_)) => true,
+            _ => core::mem::discriminant(self) == core::mem::discriminant(other),
+        }
+    }
 }
 
 impl PropType {
     pub fn from_type(tt: &str, value: Option<Box<dyn Display + 'static>>) -> PropType {
-        match tt {
-            "String" => PropType::String(value),
-            "i32" => PropType::Int(value),
+        if let Some(value) = value {
+            return match tt {
+                "String" => PropType::String(value),
+                "i128" | "i64" | "i32" | "i16" | "i8" => PropType::Int(value),
+                "u128" | "u64" | "u32" | "u16" | "u8" => PropType::Int(value),
+                "usize" | "isize" => PropType::Int(value),
 
-            _ => PropType::String(value),
-        }
+                _ => PropType::String(value),
+            };
+        };
+
+        return PropType::Null;
     }
 
     pub fn to_prop(&self) -> String {
         match self {
-            PropType::Int(value) => value.as_ref().unwrap().to_string(),
-            PropType::String(value) => format!("'{}'", value.as_ref().unwrap()),
-        }
-    }
-
-    pub fn is_some(&self) -> bool {
-        match self {
-            PropType::Int(value) => value.is_some(),
-            PropType::String(value) => value.is_some(),
+            PropType::Int(value) => value.as_ref().to_string(),
+            PropType::String(value) => format!("'{}'", value.as_ref()),
+            PropType::Null => String::from("NULL"),
         }
     }
 }
@@ -40,10 +51,6 @@ pub struct Node {
 
 impl Node {
     pub fn new(props: Props, labels: Vec<Label>) -> Self {
-        let r: isize = 1;
-
-        let d: isize = r.into();
-
         Node { props, labels }
     }
 
