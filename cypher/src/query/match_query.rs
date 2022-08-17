@@ -1,6 +1,42 @@
 use crate::node::PropType;
-use crate::query::execute::{Execute, ExecuteTrait};
-use crate::query::return_query::{ReturnQuery, ReturnTrait};
+use crate::query::finalize::{Finalize, FinalizeTrait};
+use crate::query::return_query::{ReturnParamQuery, ReturnParamTrait, ReturnQuery, ReturnTrait};
+
+/// Comparison Operators
+pub enum CompOper {
+    /// Operation `=`.
+    /// This means using the following construct in the query:
+    /// `n.{prop} = {value}`
+    Equal,
+    /// Operation `>`.
+    /// This means using the following construct in the query:
+    /// `n.{prop} > {value}`
+    More,
+    /// Operation `<`.
+    /// This means using the following construct in the query:
+    /// `n.{prop} < {value}`
+    Less,
+    /// Operation `>=`.
+    /// This means using the following construct in the query:
+    /// `n.{prop} >= {value}`
+    MoreEqual,
+    /// Operation `<=`.
+    /// This means using the following construct in the query:
+    /// `n.{prop} <= {value}`
+    LessEqual,
+}
+
+impl std::fmt::Display for CompOper {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CompOper::Equal => write!(f, "="),
+            CompOper::More => write!(f, ">"),
+            CompOper::Less => write!(f, "<"),
+            CompOper::MoreEqual => write!(f, ">="),
+            CompOper::LessEqual => write!(f, "<="),
+        }
+    }
+}
 
 pub trait MatchActionTrait: 'static + ReturnTrait {
     fn delete(&self) -> Box<dyn ReturnTrait>;
@@ -8,8 +44,8 @@ pub trait MatchActionTrait: 'static + ReturnTrait {
 }
 
 pub trait MatchConditionTrait: 'static + MatchActionTrait {
-    fn and(&mut self, prop: &str, eq: PropType) -> Box<dyn MatchConditionTrait>;
-    fn or(&mut self, prop: &str, eq: PropType) -> Box<dyn MatchConditionTrait>;
+    fn and(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
+    fn or(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
 }
 
 pub struct MatchConditionQuery {
@@ -24,55 +60,75 @@ impl MatchConditionQuery {
 }
 
 impl ReturnTrait for MatchConditionQuery {
-    fn r#return(&mut self) -> Box<dyn ExecuteTrait> {
-        let state = format!("{}\nRETURN {}", self.state, self.nv);
-        Box::new(Execute(state))
+    fn r#return(&mut self) -> Box<dyn ReturnParamTrait> {
+        let state = format!(
+            "{prev_state}\nRETURN {node_var}",
+            prev_state = self.state,
+            node_var = self.nv
+        );
+        Box::new(ReturnParamQuery::new(self.nv.clone(), state))
     }
 
-    fn return_as(&mut self, r#as: &str) -> Box<dyn ExecuteTrait> {
-        let state = format!("{}\nRETURN {} AS {}", self.state, self.nv, r#as);
-        Box::new(Execute(state))
-    }
-
-    fn return_field(&mut self, field: &str) -> Box<dyn ExecuteTrait> {
-        let state = format!("{}\nRETURN {}.{}", self.state, self.nv, field);
-        Box::new(Execute(state))
+    fn return_field(&mut self, field: &str) -> Box<dyn FinalizeTrait> {
+        let state = format!(
+            "{prev_state}\nRETURN {node_var}.{prop_name}",
+            prev_state = self.state,
+            node_var = self.nv,
+            prop_name = field
+        );
+        Box::new(Finalize(state))
     }
 }
 
 impl MatchActionTrait for MatchConditionQuery {
     fn delete(&self) -> Box<dyn ReturnTrait> {
-        let state = format!("{}\nDELETE {}\n", self.state, self.nv);
+        let state = format!(
+            "{prev_state}\nDELETE {node_var}\n",
+            prev_state = self.state,
+            node_var = self.nv
+        );
         Box::new(ReturnQuery::new(self.nv.clone(), state))
     }
 
     fn delete_detach(&self) -> Box<dyn ReturnTrait> {
-        let state = format!("{}\nDETACH DELETE {}\n", self.state, self.nv);
+        let state = format!(
+            "{prev_state}\nDETACH DELETE {node_var}\n",
+            prev_state = self.state,
+            node_var = self.nv
+        );
         Box::new(ReturnQuery::new(self.nv.clone(), state))
     }
 }
 
 impl MatchConditionTrait for MatchConditionQuery {
-    fn and(&mut self, prop: &str, eq: PropType) -> Box<dyn MatchConditionTrait> {
+    fn and(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait> {
         let state = format!(
-            "{} AND {}.{} = {} ",
-            self.state,
-            self.nv,
-            prop,
-            eq.to_prop()
+            "{prev_state} AND {node_var}.{prop_name} {operator} {value} ",
+            prev_state = self.state,
+            node_var = self.nv,
+            prop_name = prop,
+            operator = op.to_string(),
+            value = eq.to_prop()
         );
 
         Box::new(Self::new(self.nv.clone(), state))
     }
 
-    fn or(&mut self, prop: &str, eq: PropType) -> Box<dyn MatchConditionTrait> {
-        let state = format!("{} OR {}.{} = {} ", self.state, self.nv, prop, eq.to_prop());
+    fn or(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait> {
+        let state = format!(
+            "{prev_state} OR {node_var}.{prop_name} {operator} {value} ",
+            prev_state = self.state,
+            node_var = self.nv,
+            prop_name = prop,
+            operator = op.to_string(),
+            value = eq.to_prop()
+        );
         Box::new(Self::new(self.nv.clone(), state))
     }
 }
 
 pub trait MatchTrait: 'static {
-    fn r#where(&self, prop: &str, eq: PropType) -> Box<dyn MatchConditionTrait>;
+    fn r#where(&self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
 }
 
 pub struct MatchQuery {
@@ -87,13 +143,14 @@ impl MatchQuery {
 }
 
 impl MatchTrait for MatchQuery {
-    fn r#where(&self, prop: &str, eq: PropType) -> Box<dyn MatchConditionTrait> {
+    fn r#where(&self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait> {
         let state = format!(
-            "{}\nWHERE {}.{} = {}",
-            self.state,
-            self.nv,
-            prop,
-            eq.to_prop()
+            "{prev_state}\nWHERE {node_var}.{prop_name} {operator} {value}",
+            prev_state = self.state,
+            node_var = self.nv,
+            prop_name = prop,
+            operator = op,
+            value = eq.to_prop()
         );
         Box::new(MatchConditionQuery::new(self.nv.clone(), state))
     }
