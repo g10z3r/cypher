@@ -6,6 +6,24 @@ pub enum PropType {
     Null,
 }
 
+impl PropType {
+    /// Create properties type `Int`
+    pub fn int<T>(value: T) -> PropType
+    where
+        T: Display + 'static,
+    {
+        PropType::Int(Box::new(value))
+    }
+
+    /// Create properties type `String`
+    pub fn str<T>(value: T) -> PropType
+    where
+        T: Display + 'static,
+    {
+        PropType::String(Box::new(value))
+    }
+}
+
 impl PartialEq for PropType {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
