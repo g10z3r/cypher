@@ -9,6 +9,7 @@ pub use cypher_derive::Cypherize;
 use node::{Node, Props};
 use query::{Query, QueryTrait};
 
+
 pub trait CypherTrait: Sized + 'static {
     fn cypher(&self) -> Box<dyn QueryTrait>;
 }

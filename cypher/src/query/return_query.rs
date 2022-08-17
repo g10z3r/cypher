@@ -19,19 +19,17 @@ impl ReturnQuery {
 
 impl ReturnTrait for ReturnQuery {
     fn r#return(&mut self) -> Box<dyn ExecuteTrait> {
-        self.state.push_str(&format!(" RETURN {}", self.nv));
-        Box::new(Execute(self.state.clone()))
+        let state = format!("{}\nRETURN {}", self.state, self.nv);
+        Box::new(Execute(state))
     }
 
     fn return_as(&mut self, r#as: &str) -> Box<dyn ExecuteTrait> {
-        self.state
-            .push_str(&format!(" RETURN {} AS {}", self.nv, r#as));
-        Box::new(Execute(self.state.clone()))
+        let state = format!("{}\nRETURN {} AS {}", self.state, self.nv, r#as);
+        Box::new(Execute(state))
     }
 
     fn return_field(&mut self, field: &str) -> Box<dyn ExecuteTrait> {
-        self.state
-            .push_str(&format!(" RETURN {}.{}", self.nv, field));
-        Box::new(Execute(self.state.clone()))
+        let state = format!("{}\nRETURN {}.{}", self.state, self.nv, field);
+        Box::new(Execute(state))
     }
 }

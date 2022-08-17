@@ -1,13 +1,18 @@
 pub mod execute;
+pub mod match_query;
 pub mod return_query;
 
+use std::pin::Pin;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::node::{Node, PropType};
+use crate::query::match_query::{MatchQuery, MatchTrait};
 use crate::query::return_query::{ReturnQuery, ReturnTrait};
 
 pub trait QueryTrait: 'static {
     fn create(&self) -> Box<dyn ReturnTrait>;
+    fn r#match(&self) -> Box<dyn MatchTrait>;
 }
 
 pub struct Query {
@@ -48,5 +53,10 @@ impl QueryTrait for Query {
         };
 
         Box::new(ReturnQuery::new(self.nv.clone(), state))
+    }
+
+    fn r#match(&self) -> Box<dyn MatchTrait> {
+        let state = format!("MATCH ({}:{})", self.nv, self.data.get_label(0).unwrap());
+        Box::new(MatchQuery::new(self.nv.clone(), state))
     }
 }
