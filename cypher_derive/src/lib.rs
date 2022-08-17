@@ -52,7 +52,7 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
                 };
 
             quote! {
-                stringify!(#ser_name).to_string(),
+                #ser_name.to_string(),
                 PropType::from_type(
                     stringify!(#_type),
                     #prop_value
@@ -68,6 +68,9 @@ fn impl_cypherize(ast: &syn::DeriveInput) -> proc_macro2::TokenStream {
         use cypher::CypherTrait;
         use cypher::query::{QueryTrait, Query};
         use cypher::node::{Node, Props, PropType};
+
+
+
 
         impl CypherTrait for #name {
             fn cypher(&self) -> Box<dyn QueryTrait> {

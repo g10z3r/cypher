@@ -12,17 +12,12 @@ pub trait QueryTrait: 'static {
 
 pub struct Query {
     nv: String,
-    state: String,
     data: Arc<Node>,
 }
 
 impl Query {
     pub fn new(nv: String, data: Arc<Node>) -> Self {
-        Query {
-            nv,
-            state: String::new(),
-            data,
-        }
+        Query { nv, data }
     }
 
     pub fn default(data: Arc<Node>) -> Self {
@@ -52,6 +47,6 @@ impl QueryTrait for Query {
             format!("CREATE ({}:{})", self.nv, self.data.get_label(0).unwrap())
         };
 
-        Box::new(ReturnQuery::new(self.nv.clone(), state, self.data.clone()))
+        Box::new(ReturnQuery::new(self.nv.clone(), state))
     }
 }
