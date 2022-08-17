@@ -1,9 +1,7 @@
-pub mod execute;
+pub mod finalize;
 pub mod match_query;
 pub mod return_query;
 
-use std::pin::Pin;
-use std::rc::Rc;
 use std::sync::Arc;
 
 use crate::node::{Node, PropType};
@@ -43,20 +41,28 @@ impl QueryTrait for Query {
             props.pop();
 
             format!(
-                "CREATE ({}:{} {{ {} }})",
-                self.nv,
-                self.data.get_label(0).unwrap(),
-                props
+                "CREATE ({node_var}:{node_name} {{ {props_obj} }})",
+                node_var = self.nv,
+                node_name = self.data.get_label(0).unwrap(),
+                props_obj = props
             )
         } else {
-            format!("CREATE ({}:{})", self.nv, self.data.get_label(0).unwrap())
+            format!(
+                "CREATE ({node_var}:{node_name})",
+                node_var = self.nv,
+                node_name = self.data.get_label(0).unwrap()
+            )
         };
 
         Box::new(ReturnQuery::new(self.nv.clone(), state))
     }
 
     fn r#match(&self) -> Box<dyn MatchTrait> {
-        let state = format!("MATCH ({}:{})", self.nv, self.data.get_label(0).unwrap());
+        let state = format!(
+            "MATCH ({node_var}:{node_name})",
+            node_var = self.nv,
+            node_name = self.data.get_label(0).unwrap()
+        );
         Box::new(MatchQuery::new(self.nv.clone(), state))
     }
 }

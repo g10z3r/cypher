@@ -9,7 +9,6 @@ pub use cypher_derive::Cypherize;
 use node::{Node, Props};
 use query::{Query, QueryTrait};
 
-
 pub trait CypherTrait: Sized + 'static {
     fn cypher(&self) -> Box<dyn QueryTrait>;
 }
@@ -35,5 +34,5 @@ impl CypherTrait for Test {
 fn test<'a>() {
     let r = Test { dd: 32 };
 
-    let y = r.cypher().create().r#return().execute();
+    let y = r.cypher().create().r#return().finalize();
 }
