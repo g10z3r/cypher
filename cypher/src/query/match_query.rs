@@ -41,6 +41,7 @@ impl std::fmt::Display for CompOper {
 pub trait MatchActionTrait: 'static + ReturnTrait {
     fn delete(&self) -> Box<dyn ReturnTrait>;
     fn delete_detach(&self) -> Box<dyn ReturnTrait>;
+    fn set(&self, prop: &str, value: PropType) -> Box<dyn ReturnTrait>;
 }
 
 pub trait MatchConditionTrait: 'static + MatchActionTrait {
@@ -95,6 +96,17 @@ impl MatchActionTrait for MatchConditionQuery {
             "{prev_state}\nDETACH DELETE {node_var}\n",
             prev_state = self.state,
             node_var = self.nv
+        );
+        Box::new(ReturnQuery::new(self.nv.clone(), state))
+    }
+
+    fn set(&self, prop: &str, value: PropType) -> Box<dyn ReturnTrait> {
+        let state = format!(
+            "{prev_state}\nSET {node_var}.{prop_name}={value}",
+            prev_state = self.state,
+            node_var = self.nv,
+            prop_name = prop,
+            value = value.to_prop()
         );
         Box::new(ReturnQuery::new(self.nv.clone(), state))
     }
