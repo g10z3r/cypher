@@ -5,6 +5,7 @@ use syn::{Ident, Path};
 pub struct Symbol(&'static str);
 
 pub const RENAME: Symbol = Symbol("rename");
+pub const SKIP: Symbol = Symbol("skip");
 
 impl PartialEq<Symbol> for Ident {
     fn eq(&self, word: &Symbol) -> bool {

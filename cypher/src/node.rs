@@ -3,6 +3,7 @@ use std::{collections::HashMap, fmt::Display};
 pub enum PropType {
     Int(Box<dyn Display + 'static>),
     String(Box<dyn Display + 'static>),
+    Bool(bool),
     Null,
 }
 
@@ -42,6 +43,7 @@ impl PropType {
                 "i128" | "i64" | "i32" | "i16" | "i8" => PropType::Int(value),
                 "u128" | "u64" | "u32" | "u16" | "u8" => PropType::Int(value),
                 "usize" | "isize" => PropType::Int(value),
+                "bool" => PropType::Bool(if value.to_string() == "true" { true } else { false }),
 
                 _ => PropType::String(value),
             };
@@ -54,6 +56,7 @@ impl PropType {
         match self {
             PropType::Int(value) => value.as_ref().to_string(),
             PropType::String(value) => format!("'{}'", value.as_ref()),
+            PropType::Bool(value) => value.to_string(),
             PropType::Null => String::from("NULL"),
         }
     }

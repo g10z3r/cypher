@@ -3,11 +3,8 @@ name = "cypher"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 cypher_derive = { veriosn="0.1.0", path = "../cypher_derive", optional = true }
-
 
 [features]
 derive = ["cypher_derive"]

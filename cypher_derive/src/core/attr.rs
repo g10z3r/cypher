@@ -56,8 +56,25 @@ impl<'a, T> Attr<'a, T> {
     }
 }
 
+struct BoolAttr<'c>(Attr<'c, ()>);
+
+impl<'c> BoolAttr<'c> {
+    fn none(cx: &'c Context, name: Symbol) -> Self {
+        BoolAttr(Attr::none(cx, name))
+    }
+
+    fn set_true<A: ToTokens>(&mut self, obj: A) {
+        self.0.set(obj, ());
+    }
+
+    fn get(&self) -> bool {
+        self.0.value.is_some()
+    }
+}
+
 pub struct Field {
     pub name: Name,
+    pub skip: bool,
 }
 
 impl Field {
@@ -67,8 +84,10 @@ impl Field {
         field: &syn::Field,
         attrs: Option<&Variant>,
     ) -> Self {
-        let mut ser_name = Attr::none(ctx, RENAME);
-        let mut de_name = Attr::none(ctx, RENAME);
+        let mut set_name = Attr::none(ctx, RENAME);
+        let mut get_name = Attr::none(ctx, RENAME);
+
+        let mut skip = BoolAttr::none(ctx, SKIP);
 
         let ident = match &field.ident {
             Some(ident) => unraw(ident),
@@ -82,11 +101,15 @@ impl Field {
             .flatten()
         {
             match &meta_item {
+                // Parse `#[cypher(rename = "name")]`
                 Meta(NameValue(m)) if m.path == RENAME => {
                     if let Ok(s) = get_lit_str(ctx, RENAME, &m.lit) {
-                        ser_name.set(&m.path, s.value());
+                        set_name.set(&m.path, s.value());
                     }
                 }
+
+                // Parse `#[cypher(skip)]`
+                Meta(Path(word)) if word == SKIP => skip.set_true(word),
 
                 Meta(meta_item) => {
                     let path = meta_item
@@ -107,7 +130,8 @@ impl Field {
         }
 
         Field {
-            name: Name::from_attrs(ident, ser_name, de_name),
+            name: Name::from_attrs(ident, set_name, get_name),
+            skip: skip.get(),
         }
     }
 }
@@ -143,8 +167,8 @@ pub struct Container {
 impl Container {
     /// Извлечение атрибутов элемента
     pub fn from_ast(ctx: &Context, input: &DeriveInput) -> Self {
-        let mut ser_name = Attr::none(ctx, RENAME);
-        let mut de_name = Attr::none(ctx, RENAME);
+        let mut set_name = Attr::none(ctx, RENAME);
+        let mut get_name = Attr::none(ctx, RENAME);
 
         for meta_input in input
             .attrs
@@ -155,7 +179,7 @@ impl Container {
             match &meta_input {
                 Meta(NameValue(m)) if m.path == RENAME => {
                     if let Ok(s) = get_lit_str(ctx, RENAME, &m.lit) {
-                        ser_name.set(&m.path, s.value());
+                        set_name.set(&m.path, s.value());
                     }
                 }
 
@@ -178,7 +202,7 @@ impl Container {
         }
 
         Container {
-            name: Name::from_attrs(unraw(&input.ident), ser_name, de_name),
+            name: Name::from_attrs(unraw(&input.ident), set_name, get_name),
         }
     }
 }
@@ -189,8 +213,8 @@ pub struct Variant {
 
 impl<'a> Variant {
     pub fn from_ast(ctx: &'a Context, variant: &'a syn::Variant) -> Self {
-        let mut ser_name = Attr::none(ctx, RENAME);
-        let mut de_name = Attr::none(ctx, RENAME);
+        let mut get_name = Attr::none(ctx, RENAME);
+        let mut set_name = Attr::none(ctx, RENAME);
 
         for meta_item in variant
             .attrs
@@ -201,7 +225,7 @@ impl<'a> Variant {
             match &meta_item {
                 Meta(NameValue(m)) if m.path == RENAME => {
                     if let Ok(s) = get_lit_str(ctx, RENAME, &m.lit) {
-                        ser_name.set(&m.path, s.value());
+                        set_name.set(&m.path, s.value());
                     }
                 }
 
@@ -224,7 +248,7 @@ impl<'a> Variant {
         }
 
         Variant {
-            name: Name::from_attrs(unraw(&variant.ident), ser_name, de_name),
+            name: Name::from_attrs(unraw(&variant.ident), set_name, get_name),
         }
     }
 }
