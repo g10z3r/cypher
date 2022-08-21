@@ -1,12 +1,20 @@
-use super::context::Context;
 use proc_macro2::TokenStream;
 use quote::ToTokens;
+use syn::parse::{self, Parse, ParseStream};
 use syn::DeriveInput;
 use syn::Ident;
 use syn::Meta::{List, NameValue, Path};
 use syn::NestedMeta::{Lit, Meta};
 
+use super::context::Context;
+use super::respan::*;
 use super::symbol::*;
+
+pub enum Default {
+    None,
+    Default,
+    Path(syn::Path),
+}
 
 pub struct Attr<'a, T> {
     ctx: &'a Context,
@@ -75,6 +83,8 @@ impl<'c> BoolAttr<'c> {
 pub struct Field {
     pub name: Name,
     pub skip: bool,
+    pub label: bool,
+    pub default: Default,
 }
 
 impl Field {
@@ -88,6 +98,8 @@ impl Field {
         let mut get_name = Attr::none(ctx, RENAME);
 
         let mut skip = BoolAttr::none(ctx, SKIP);
+        let mut label = BoolAttr::none(ctx, LABEL);
+        let mut default = Attr::none(ctx, DEFAULT);
 
         let ident = match &field.ident {
             Some(ident) => unraw(ident),
@@ -111,6 +123,19 @@ impl Field {
                 // Parse `#[cypher(skip)]`
                 Meta(Path(word)) if word == SKIP => skip.set_true(word),
 
+                // Parse `#[cypher(label)]`
+                Meta(Path(word)) if word == LABEL => label.set_true(word),
+
+                // Parse `#[cypher(default)]`
+                Meta(Path(word)) if word == DEFAULT => default.set(word, Default::Default),
+
+                // Parse `#[cypher(default = "...")]`
+                Meta(NameValue(m)) if m.path == DEFAULT => {
+                    if let Ok(path) = parse_lit_into_expr_path(ctx, DEFAULT, &m.lit) {
+                        default.set(&m.path, Default::Path(path.path));
+                    }
+                }
+
                 Meta(meta_item) => {
                     let path = meta_item
                         .path()
@@ -132,6 +157,8 @@ impl Field {
         Field {
             name: Name::from_attrs(ident, set_name, get_name),
             skip: skip.get(),
+            label: label.get(),
+            default: default.get().unwrap_or(Default::None),
         }
     }
 }
@@ -289,4 +316,28 @@ fn get_serde_meta_inputs(ctx: &Context, attr: &syn::Attribute) -> Result<Vec<syn
             Err(())
         }
     }
+}
+
+fn parse_lit_into_expr_path(
+    cx: &Context,
+    attr_name: Symbol,
+    lit: &syn::Lit,
+) -> Result<syn::ExprPath, ()> {
+    let string = get_lit_str(cx, attr_name, lit)?;
+    parse_lit_str(string).map_err(|_| {
+        cx.error_spanned_by(lit, format!("failed to parse path: {:?}", string.value()));
+    })
+}
+
+fn parse_lit_str<T>(s: &syn::LitStr) -> parse::Result<T>
+where
+    T: Parse,
+{
+    let tokens = spanned_tokens(s)?;
+    syn::parse2(tokens)
+}
+
+fn spanned_tokens(s: &syn::LitStr) -> parse::Result<TokenStream> {
+    let stream = syn::parse_str(&s.value())?;
+    Ok(respan(stream, s.span()))
 }

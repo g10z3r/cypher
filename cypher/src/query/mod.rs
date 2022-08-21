@@ -40,17 +40,31 @@ impl QueryTrait for Query {
                 .collect();
             props.pop();
 
+            let labels: String = self
+                .data
+                .labels()
+                .iter()
+                .map(|label| {
+                    format!(
+                        "\nSET {node_var}:{label_name}",
+                        node_var = self.nv,
+                        label_name = label.to_string()
+                    )
+                })
+                .collect();
+
             format!(
-                "CREATE ({node_var}:{node_name} {{ {props_obj} }})",
+                "CREATE ({node_var}:{node_name} {{ {props_obj} }}){labels}",
                 node_var = self.nv,
-                node_name = self.data.get_label(0).unwrap(),
-                props_obj = props
+                node_name = self.data.node_name(),
+                props_obj = props,
+                labels = labels,
             )
         } else {
             format!(
                 "CREATE ({node_var}:{node_name})",
                 node_var = self.nv,
-                node_name = self.data.get_label(0).unwrap()
+                node_name = self.data.node_name()
             )
         };
 
@@ -61,7 +75,7 @@ impl QueryTrait for Query {
         let state = format!(
             "MATCH ({node_var}:{node_name})",
             node_var = self.nv,
-            node_name = self.data.get_label(0).unwrap()
+            node_name = self.data.node_name()
         );
         Box::new(MatchQuery::new(self.nv.clone(), state))
     }

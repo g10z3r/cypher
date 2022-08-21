@@ -6,6 +6,8 @@ pub struct Symbol(&'static str);
 
 pub const RENAME: Symbol = Symbol("rename");
 pub const SKIP: Symbol = Symbol("skip");
+pub const LABEL: Symbol = Symbol("label");
+pub const DEFAULT: Symbol = Symbol("default");
 
 impl PartialEq<Symbol> for Ident {
     fn eq(&self, word: &Symbol) -> bool {

@@ -9,11 +9,63 @@ pub fn expand_derive_cypue(input: &mut syn::DeriveInput) -> TokenStream {
         None => todo!(),
     };
 
-    let variants = cont
-        .data
+    let props = collect_props(&cont);
+    let labels = collect_labels(&cont);
+
+    let node_ident_name = &input.ident;
+    let node_query_name = cont.attrs.name.serialize;
+    // let d = Vec::new();
+    // d.push(value)
+
+    let output = quote!(
+        use cypher::CypherTrait;
+        use cypher::query::{QueryTrait, Query};
+        use cypher::node::{Node, Props, PropType};
+
+        impl CypherTrait for #node_ident_name {
+            fn cypher(&self) -> Box<dyn QueryTrait> {
+                use std::sync::Arc;
+
+                let mut mp = Props::new();
+                #(mp.insert(#props);)*
+
+                let mut lb: Vec<Box<dyn Display>> = Vec::new();
+                #(lb.push(#labels);)*
+
+                println!("{}", lb.len());
+
+                let node = Node::new(
+                    String::from(#node_query_name),
+                    mp,
+                    lb
+                );
+                let q = Query::default(Arc::new(node));
+
+                Box::new(q)
+            }
+        }
+    );
+
+    output
+}
+
+fn collect_labels(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
+    cont.data
         .1
-        .into_iter()
-        .filter(|field| !field.attrs.skip)
+        .iter()
+        .filter(|field| !field.attrs.skip && field.attrs.label)
+        .map(|field| {
+            let org_name = field.original.ident.as_ref().unwrap();
+            quote!(Box::new(self.#org_name.clone()))
+        })
+        .collect::<Vec<_>>()
+}
+
+fn collect_props(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
+    cont.data
+        .1
+        .iter()
+        .filter(|field| !field.attrs.skip && !field.attrs.label)
         .map(|field| {
             let org_name = field.original.ident.as_ref().unwrap();
             let ser_name = field.attrs.name.serialize.as_str();
@@ -43,34 +95,7 @@ pub fn expand_derive_cypue(input: &mut syn::DeriveInput) -> TokenStream {
                 )
             }
         })
-        .collect::<Vec<_>>();
-
-    let node_ident_name = &input.ident;
-    let node_query_name = cont.attrs.name.serialize;
-
-    let output = quote!(
-        use cypher::CypherTrait;
-        use cypher::query::{QueryTrait, Query};
-        use cypher::node::{Node, Props, PropType};
-
-        impl CypherTrait for #node_ident_name {
-            fn cypher(&self) -> Box<dyn QueryTrait> {
-                use std::sync::Arc;
-
-                let mut mp = Props::new();
-                #(
-                    mp.insert(#variants);
-                )*
-
-                let node = Node::new(mp, vec![String::from(#node_query_name)]);
-                let q = Query::default(Arc::new(node));
-
-                Box::new(q)
-            }
-        }
-    );
-
-    output
+        .collect::<Vec<_>>()
 }
 
 fn ty_inner_type<'a>(wrapper: &str, ty: &'a syn::Type) -> Option<&'a syn::Type> {
