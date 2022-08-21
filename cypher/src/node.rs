@@ -43,7 +43,11 @@ impl PropType {
                 "i128" | "i64" | "i32" | "i16" | "i8" => PropType::Int(value),
                 "u128" | "u64" | "u32" | "u16" | "u8" => PropType::Int(value),
                 "usize" | "isize" => PropType::Int(value),
-                "bool" => PropType::Bool(if value.to_string() == "true" { true } else { false }),
+                "bool" => PropType::Bool(if value.to_string() == "true" {
+                    true
+                } else {
+                    false
+                }),
 
                 _ => PropType::String(value),
             };
@@ -63,20 +67,33 @@ impl PropType {
 }
 
 pub type Props = HashMap<String, PropType>;
-pub type Label = String;
+pub type Label = Box<dyn Display>;
 
 pub struct Node {
+    name: String,
     labels: Vec<Label>,
     props: Props,
 }
 
 impl Node {
-    pub fn new(props: Props, labels: Vec<Label>) -> Self {
-        Node { props, labels }
+    pub fn new(name: String, props: Props, labels: Vec<Label>) -> Self {
+        Node {
+            name,
+            props,
+            labels,
+        }
     }
 
     pub fn props(&self) -> &Props {
         &self.props
+    }
+
+    pub fn node_name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn labels(&self) -> &Vec<Label> {
+        &self.labels
     }
 
     pub fn add_label(&mut self, label: Label) {
