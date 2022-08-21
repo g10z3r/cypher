@@ -13,7 +13,7 @@ use super::symbol::*;
 pub enum Default {
     None,
     Default,
-    Path(syn::Path),
+    Value(String),
 }
 
 pub struct Attr<'a, T> {
@@ -131,8 +131,8 @@ impl Field {
 
                 // Parse `#[cypher(default = "...")]`
                 Meta(NameValue(m)) if m.path == DEFAULT => {
-                    if let Ok(path) = parse_lit_into_expr_path(ctx, DEFAULT, &m.lit) {
-                        default.set(&m.path, Default::Path(path.path));
+                    if let Ok(s) = get_lit_str(ctx, RENAME, &m.lit) {
+                        default.set(&m.path, Default::Value(s.value()));
                     }
                 }
 

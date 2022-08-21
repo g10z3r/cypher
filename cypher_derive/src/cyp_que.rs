@@ -14,8 +14,6 @@ pub fn expand_derive_cypue(input: &mut syn::DeriveInput) -> TokenStream {
 
     let node_ident_name = &input.ident;
     let node_query_name = cont.attrs.name.serialize;
-    // let d = Vec::new();
-    // d.push(value)
 
     let output = quote!(
         use cypher::CypherTrait;
@@ -31,8 +29,6 @@ pub fn expand_derive_cypue(input: &mut syn::DeriveInput) -> TokenStream {
 
                 let mut lb: Vec<Box<dyn Display>> = Vec::new();
                 #(lb.push(#labels);)*
-
-                println!("{}", lb.len());
 
                 let node = Node::new(
                     String::from(#node_query_name),
@@ -75,11 +71,21 @@ fn collect_props(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
                 if let Some(type_in_option) = ty_inner_type("Option", &field.original.ty) {
                     _type = type_in_option;
 
+                    let defval = match &field.attrs.default {
+                        crate::core::attr::Default::None => quote!(None),
+                        crate::core::attr::Default::Default => quote!(
+                            Some(Box::new(#_type::default()))
+                        ),
+                        crate::core::attr::Default::Value(value) => quote!(
+                            Some(Box::new(#value))
+                        ),
+                    };
+
                     quote!(
                         if self.#org_name.is_some() {
                             Some(Box::new(self.#org_name.clone().unwrap()))
                         } else {
-                            None
+                            #defval
                         }
                     )
                 } else {
