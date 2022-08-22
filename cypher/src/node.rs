@@ -4,6 +4,14 @@ pub enum PropType {
     Int(Box<dyn Display + 'static>),
     String(Box<dyn Display + 'static>),
     Bool(bool),
+    Array(Vec<Self>),
+    /// If a well-formed array already exists as a string.
+    /// For example: `['Bob', 'Tom']`.
+    /// 
+    /// When forming a request, the result will be identical 
+    /// to the `PropType::Array` type.
+    StrArr(String),
+    /// Neo4j BOLT type NULL
     Null,
 }
 
@@ -11,7 +19,7 @@ impl PropType {
     /// Create properties type `Int`
     pub fn int<T>(value: T) -> PropType
     where
-        T: Display + 'static,
+        T: std::fmt::Display + 'static,
     {
         PropType::Int(Box::new(value))
     }
@@ -19,9 +27,32 @@ impl PropType {
     /// Create properties type `String`
     pub fn str<T>(value: T) -> PropType
     where
-        T: Display + 'static,
+        T: std::fmt::Display + 'static,
     {
         PropType::String(Box::new(value))
+    }
+
+    /// Create properties type `Array`
+    pub fn arr<T>(ty: &str, value: Vec<T>) -> PropType
+    where
+        T: std::fmt::Display + 'static,
+    {
+        PropType::Array(
+            value
+                .into_iter()
+                .map(|item| PropType::from_type(ty, Some(Box::new(item))))
+                .collect::<Vec<Self>>(),
+        )
+    }
+
+    /// Create type PropType::Array if the array is already well-formed.
+    /// For example: `['Bob', 'Tom']`.
+    pub fn str_arr(value: Option<&str>) -> PropType {
+        if let Some(value) = value {
+            PropType::StrArr(value.to_string())
+        } else {
+            PropType::Null
+        }
     }
 }
 
@@ -61,6 +92,16 @@ impl PropType {
             PropType::Int(value) => value.as_ref().to_string(),
             PropType::String(value) => format!("'{}'", value.as_ref()),
             PropType::Bool(value) => value.to_string(),
+            PropType::Array(value) => {
+                let mut body = value
+                    .iter()
+                    .map(|item| format!("{},", PropType::to_prop(item)))
+                    .collect::<String>();
+                body.pop();
+
+                format!("[{}]", body)
+            }
+            PropType::StrArr(value) => value.to_string(),
             PropType::Null => String::from("NULL"),
         }
     }
