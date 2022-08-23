@@ -111,8 +111,7 @@ impl FinalizeTrait for ReturnParamQuery {
 }
 
 pub trait ReturnTrait: 'static {
-    fn r#return(&mut self, nv: &str) -> Box<dyn ReturnParamTrait>;
-    fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait>;
+    fn r#return(&mut self, nv: &str, field: Option<&str>) -> Box<dyn ReturnParamTrait>;
 }
 
 pub struct ReturnQuery {
@@ -126,22 +125,30 @@ impl ReturnQuery {
 }
 
 impl ReturnTrait for ReturnQuery {
-    fn r#return(&mut self, nv: &str) -> Box<dyn ReturnParamTrait> {
-        let state = format!(
-            "{prev_state}\nRETURN {node_var}",
-            prev_state = self.state,
-            node_var = nv
-        );
-        Box::new(ReturnParamQuery::new(state))
+    fn r#return(&mut self, nv: &str, field: Option<&str>) -> Box<dyn ReturnParamTrait> {
+        return_method(&self.state, nv, field)
     }
+}
 
-    fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait> {
-        let state = format!(
+pub(super) fn return_method(
+    state: &str,
+    nv: &str,
+    field: Option<&str>,
+) -> Box<dyn ReturnParamTrait> {
+    let state = if let Some(field) = field {
+        format!(
             "{prev_state}\nRETURN {node_var}.{prop_name}",
-            prev_state = self.state,
+            prev_state = state,
             node_var = nv,
             prop_name = field
-        );
-        Box::new(Finalize(state))
-    }
+        )
+    } else {
+        format!(
+            "{prev_state}\nRETURN {node_var}",
+            prev_state = state,
+            node_var = nv
+        )
+    };
+
+    Box::new(ReturnParamQuery::new(state))
 }

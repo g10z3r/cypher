@@ -109,7 +109,7 @@ impl Field {
         for meta_item in field
             .attrs
             .iter()
-            .flat_map(|attr| get_serde_meta_inputs(ctx, attr))
+            .flat_map(|attr| get_cypher_meta_inputs(ctx, attr))
             .flatten()
         {
             match &meta_item {
@@ -164,24 +164,24 @@ impl Field {
 }
 
 pub struct Name {
-    pub serialize: String,
-    pub serialize_renamed: bool,
-    pub deserialize: String,
-    pub deserialize_renamed: bool,
+    pub settable: String,
+    pub settable_renamed: bool,
+    pub gettable: String,
+    pub gettable_renamed: bool,
 }
 
 impl Name {
-    fn from_attrs(source_name: String, ser_name: Attr<String>, de_name: Attr<String>) -> Name {
-        let ser_name = ser_name.get();
-        let ser_renamed = ser_name.is_some();
-        let de_name = de_name.get();
-        let de_renamed = de_name.is_some();
+    fn from_attrs(source_name: String, set_name: Attr<String>, get_name: Attr<String>) -> Name {
+        let set_name = set_name.get();
+        let set_renamed = set_name.is_some();
+        let get_name = get_name.get();
+        let get_renamed = get_name.is_some();
 
         Name {
-            serialize: ser_name.unwrap_or_else(|| source_name.clone()),
-            serialize_renamed: ser_renamed,
-            deserialize: de_name.unwrap_or(source_name),
-            deserialize_renamed: de_renamed,
+            settable: set_name.unwrap_or_else(|| source_name.clone()),
+            settable_renamed: set_renamed,
+            gettable: get_name.unwrap_or(source_name),
+            gettable_renamed: get_renamed,
         }
     }
 }
@@ -200,7 +200,7 @@ impl Container {
         for meta_input in input
             .attrs
             .iter()
-            .flat_map(|attr| get_serde_meta_inputs(ctx, attr))
+            .flat_map(|attr| get_cypher_meta_inputs(ctx, attr))
             .flatten()
         {
             match &meta_input {
@@ -223,7 +223,7 @@ impl Container {
                 }
 
                 Lit(lit) => {
-                    ctx.error_spanned_by(lit, "unexpected literal in serde container attribute");
+                    ctx.error_spanned_by(lit, "unexpected literal in cypher container attribute");
                 }
             }
         }
@@ -246,7 +246,7 @@ impl<'a> Variant {
         for meta_item in variant
             .attrs
             .iter()
-            .flat_map(|attr| get_serde_meta_inputs(ctx, attr))
+            .flat_map(|attr| get_cypher_meta_inputs(ctx, attr))
             .flatten()
         {
             match &meta_item {
@@ -269,7 +269,7 @@ impl<'a> Variant {
                 }
 
                 Lit(lit) => {
-                    ctx.error_spanned_by(lit, "unexpected literal in serde variant attribute");
+                    ctx.error_spanned_by(lit, "unexpected literal in cypher variant attribute");
                 }
             }
         }
@@ -304,7 +304,10 @@ fn get_lit_str<'a>(
     }
 }
 
-fn get_serde_meta_inputs(ctx: &Context, attr: &syn::Attribute) -> Result<Vec<syn::NestedMeta>, ()> {
+fn get_cypher_meta_inputs(
+    ctx: &Context,
+    attr: &syn::Attribute,
+) -> Result<Vec<syn::NestedMeta>, ()> {
     match attr.parse_meta() {
         Ok(List(meta)) => Ok(meta.nested.into_iter().collect()),
         Ok(other) => {

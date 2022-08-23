@@ -114,7 +114,7 @@ pub type Props = HashMap<String, PropType>;
 pub type Label = Box<dyn Display>;
 
 pub trait EntityTrait: 'static + Sized {
-    fn entity(&self, nv: &str) -> Entity;
+    fn into_entity(&self, nv: &str) -> Entity;
 }
 
 /// Entities existing in Neo4j. Nodes and relationships.

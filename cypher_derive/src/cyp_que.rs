@@ -1,18 +1,19 @@
-use proc_macro2::{TokenStream, Span};
+use proc_macro2::TokenStream;
 
 use crate::core::{ast, context::Context};
 
-pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> TokenStream {
+pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> Result<TokenStream, Vec<syn::Error>> {
     let ctx = Context::new();
     let cont = match ast::Container::from_ast(&ctx, input) {
         Some(cont) => cont,
-        None => todo!(),
+        None => return Err(ctx.check().unwrap_err()),
     };
+    ctx.check()?;
 
-    let props = collect_props(&cont);
-    let labels = collect_labels(&cont);
+    let props = collect_props(&cont)?;
+    let labels = collect_labels(&cont)?;
 
-    let node_query_name = cont.attrs.name.serialize;
+    let node_query_name = &cont.attrs.name.settable;
     let node_ident_name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
@@ -21,7 +22,7 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> TokenStream {
         use cypher::entity::{Entity, Props, PropType, EntityTrait};
 
         impl #impl_generics EntityTrait for #node_ident_name #ty_generics #where_clause{
-            fn entity(&self, nv: &str)-> Entity {
+            fn into_entity(&self, nv: &str)-> Entity {
                 use std::sync::Arc;
 
                 let mut mp = Props::new();
@@ -40,12 +41,12 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> TokenStream {
         }
     );
 
-    output
+    Ok(output)
 }
 
 /// Получение всех полей которые указаны как `label` узла.
-fn collect_labels(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
-    cont.data
+fn collect_labels(cont: &ast::Container) -> Result<Vec<TokenStream>, Vec<syn::Error>> {
+    let output = cont.data
         .1
         .iter()
         .filter(|field| !field.attrs.skip && field.attrs.label)
@@ -53,14 +54,16 @@ fn collect_labels(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
             let org_name = field.original.ident.as_ref().unwrap();
             quote!(Box::new(self.#org_name.clone()))
         })
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>();
+
+    Ok(output)
 }
 
 /// Получение всех полей которые не помечены меткой `label`. 
 /// Все собранные поля и их названия будут использоваться как параметры узла
 /// при формировании запроса.
-fn collect_props(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
-    cont.data
+fn collect_props(cont: &ast::Container) -> Result<Vec<TokenStream>, Vec<syn::Error>> {
+    let output = cont.data
         .1
         .iter()
         .filter(|field| !field.attrs.skip && !field.attrs.label)
@@ -68,7 +71,7 @@ fn collect_props(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
             // Нативное имя поля в родительской структуре
             let org_name = field.original.ident.as_ref().unwrap();
             // Имя параметра которое должно быть использовано при формировании запроса
-            let set_name = field.attrs.name.serialize.as_str();
+            let set_name = field.attrs.name.settable.as_str();
             // Нативный тип поля в родительской структуре
             let mut _type = &field.original.ty;
 
@@ -88,7 +91,7 @@ fn collect_props(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
                         };  
                     
                         quote!(
-                            // Если значение сущенствует прелбразовываю массив в PropType::Array массив
+                            // Если значение сущенствует преoбразовываю массив в PropType::Array массив
                             if self.#org_name.is_some() {                                   
                                 PropType::arr(
                                     stringify!(#i_ty), 
@@ -152,7 +155,9 @@ fn collect_props(cont: &ast::Container) -> Vec<proc_macro2::TokenStream> {
                 #prop_value
             }
         })
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>();
+
+        Ok(output)
 }
 
 /// Определение родителя дженерик типа

@@ -2,4 +2,4 @@ pub mod query;
 pub mod entity;
 
 #[cfg(feature = "derive")]
-pub use cypher_derive::CypQue;
+pub use cypher_derive::CypQueSet;

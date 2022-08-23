@@ -1,6 +1,7 @@
 use crate::entity::PropType;
-use crate::query::finalize::{Finalize, FinalizeTrait};
-use crate::query::return_query::{ReturnParamQuery, ReturnParamTrait, ReturnQuery, ReturnTrait};
+use crate::query::return_query::{ReturnParamTrait, ReturnQuery, ReturnTrait};
+
+use crate::query::QueryTrait;
 
 /// Comparison operators.
 pub enum CompOper {
@@ -44,7 +45,7 @@ pub trait MatchActionTrait: 'static + ReturnTrait {
     fn set(&self, prop: &str, value: PropType) -> Box<dyn ReturnTrait>;
 }
 
-pub trait MatchConditionTrait: 'static + MatchActionTrait {
+pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     fn and(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
     fn or(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
 }
@@ -61,23 +62,8 @@ impl MatchConditionQuery {
 }
 
 impl ReturnTrait for MatchConditionQuery {
-    fn r#return(&mut self, nv: &str) -> Box<dyn ReturnParamTrait> {
-        let state = format!(
-            "{prev_state}\nRETURN {node_var}",
-            prev_state = self.state,
-            node_var = nv
-        );
-        Box::new(ReturnParamQuery::new(state))
-    }
-
-    fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait> {
-        let state = format!(
-            "{prev_state}\nRETURN {node_var}.{prop_name}",
-            prev_state = self.state,
-            node_var = nv,
-            prop_name = field
-        );
-        Box::new(Finalize(state))
+    fn r#return(&mut self, nv: &str, field: Option<&str>) -> Box<dyn ReturnParamTrait> {
+        super::return_query::return_method(&self.state, nv, field)
     }
 }
 
@@ -138,6 +124,8 @@ impl MatchConditionTrait for MatchConditionQuery {
         Box::new(Self::new(self.nv.clone(), state))
     }
 }
+
+impl QueryTrait for MatchConditionQuery {}
 
 pub trait MatchTrait: 'static {
     fn r#where(&self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
