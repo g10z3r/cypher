@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt::Display};
 
+/// Internal types for use in entity properties.
 pub enum PropType {
     Int(Box<dyn Display + 'static>),
     String(Box<dyn Display + 'static>),
@@ -107,13 +108,16 @@ impl PropType {
     }
 }
 
+/// An object for parameters that can be used with any Neo4j entity.
 pub type Props = HashMap<String, PropType>;
+/// Inner wrapper for any type that can be cast to a string and stored as a node label
 pub type Label = Box<dyn Display>;
 
 pub trait EntityTrait: 'static + Sized {
     fn entity(&self, nv: &str) -> Entity;
 }
 
+/// Entities existing in Neo4j. Nodes and relationships.
 pub enum Entity<'a> {
     Node {
         nv: String,
@@ -126,6 +130,7 @@ pub enum Entity<'a> {
 }
 
 impl<'a> Entity<'a> {
+    /// Create new `Entity::Node`
     pub fn node(nv: String, node_name: &'a str, props: Props, labels: Vec<Label>) -> Entity<'a> {
         Entity::Node {
             nv,

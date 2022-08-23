@@ -62,13 +62,12 @@ pub trait ReturnParamTrait: 'static + LimitControlTrait + FinalizeTrait {
 }
 
 pub struct ReturnParamQuery {
-    nv: String,
     state: String,
 }
 
 impl ReturnParamQuery {
-    pub fn new(nv: String, state: String) -> Self {
-        Self { nv, state }
+    pub fn new(state: String) -> Self {
+        Self { state }
     }
 }
 
@@ -99,7 +98,6 @@ impl ReturnParamTrait for ReturnParamQuery {
         let state = format!(
             "{prev_state} AS {as_val}",
             prev_state = self.state,
-            // node_var = self.nv,
             as_val = r#as
         );
         Box::new(LimitControlQuery(state))
@@ -118,12 +116,11 @@ pub trait ReturnTrait: 'static {
 }
 
 pub struct ReturnQuery {
-    // nv: String,
     state: String,
 }
 
 impl ReturnQuery {
-    pub fn new(nv: String, state: String) -> Self {
+    pub fn new(state: String) -> Self {
         ReturnQuery { state }
     }
 }
@@ -135,7 +132,7 @@ impl ReturnTrait for ReturnQuery {
             prev_state = self.state,
             node_var = nv
         );
-        Box::new(ReturnParamQuery::new(nv.to_string(), state))
+        Box::new(ReturnParamQuery::new(state))
     }
 
     fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait> {

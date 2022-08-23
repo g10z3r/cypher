@@ -2,7 +2,7 @@ use crate::entity::PropType;
 use crate::query::finalize::{Finalize, FinalizeTrait};
 use crate::query::return_query::{ReturnParamQuery, ReturnParamTrait, ReturnQuery, ReturnTrait};
 
-/// Comparison Operators
+/// Comparison operators.
 pub enum CompOper {
     /// Operation `=`.
     /// This means using the following construct in the query:
@@ -67,7 +67,7 @@ impl ReturnTrait for MatchConditionQuery {
             prev_state = self.state,
             node_var = nv
         );
-        Box::new(ReturnParamQuery::new(self.nv.clone(), state))
+        Box::new(ReturnParamQuery::new(state))
     }
 
     fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait> {
@@ -88,7 +88,7 @@ impl MatchActionTrait for MatchConditionQuery {
             prev_state = self.state,
             node_var = self.nv
         );
-        Box::new(ReturnQuery::new(self.nv.clone(), state))
+        Box::new(ReturnQuery::new(state))
     }
 
     fn delete_detach(&self) -> Box<dyn ReturnTrait> {
@@ -97,7 +97,7 @@ impl MatchActionTrait for MatchConditionQuery {
             prev_state = self.state,
             node_var = self.nv
         );
-        Box::new(ReturnQuery::new(self.nv.clone(), state))
+        Box::new(ReturnQuery::new(state))
     }
 
     fn set(&self, prop: &str, value: PropType) -> Box<dyn ReturnTrait> {
@@ -108,7 +108,7 @@ impl MatchActionTrait for MatchConditionQuery {
             prop_name = prop,
             value = value.to_prop()
         );
-        Box::new(ReturnQuery::new(self.nv.clone(), state))
+        Box::new(ReturnQuery::new(state))
     }
 }
 
