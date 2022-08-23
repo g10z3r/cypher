@@ -1,4 +1,4 @@
-use crate::node::PropType;
+use crate::entity::PropType;
 use crate::query::finalize::{Finalize, FinalizeTrait};
 use crate::query::return_query::{ReturnParamQuery, ReturnParamTrait, ReturnQuery, ReturnTrait};
 

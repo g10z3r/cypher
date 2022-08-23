@@ -7,8 +7,8 @@ pub enum PropType {
     Array(Vec<Self>),
     /// If a well-formed array already exists as a string.
     /// For example: `['Bob', 'Tom']`.
-    /// 
-    /// When forming a request, the result will be identical 
+    ///
+    /// When forming a request, the result will be identical
     /// to the `PropType::Array` type.
     StrArr(String),
     /// Neo4j BOLT type NULL
@@ -110,38 +110,28 @@ impl PropType {
 pub type Props = HashMap<String, PropType>;
 pub type Label = Box<dyn Display>;
 
-pub struct Node {
-    name: String,
-    labels: Vec<Label>,
-    props: Props,
+pub trait EntityTrait: 'static + Sized {
+    fn entity(&self) -> Entity;
 }
 
-impl Node {
-    pub fn new(name: String, props: Props, labels: Vec<Label>) -> Self {
-        Node {
-            name,
+pub enum Entity<'a> {
+    Node {
+        nv: &'a str,
+        node_name: &'a str,
+        props: Props,
+        labels: Vec<Label>,
+    },
+
+    Relation,
+}
+
+impl<'a> Entity<'a> {
+    pub fn node(nv: &'a str, node_name: &'a str, props: Props, labels: Vec<Label>) -> Entity<'a> {
+        Entity::Node {
+            nv,
+            node_name,
             props,
             labels,
         }
-    }
-
-    pub fn props(&self) -> &Props {
-        &self.props
-    }
-
-    pub fn node_name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn labels(&self) -> &Vec<Label> {
-        &self.labels
-    }
-
-    pub fn add_label(&mut self, label: Label) {
-        self.labels.push(label)
-    }
-
-    pub fn get_label(&self, index: usize) -> Option<&Label> {
-        self.labels.get(index)
     }
 }

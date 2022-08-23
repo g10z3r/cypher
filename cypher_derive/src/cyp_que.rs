@@ -16,12 +16,11 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> TokenStream {
     let node_query_name = cont.attrs.name.serialize;
 
     let output = quote!(
-        use cypher::CypherTrait;
         use cypher::query::{QueryTrait, Query};
-        use cypher::node::{Node, Props, PropType};
+        use cypher::entity::{Entity, Props, PropType, EntityTrait};
 
-        impl CypherTrait for #node_ident_name {
-            fn cypher(&self) -> Box<dyn QueryTrait> {
+        impl EntityTrait for #node_ident_name {
+            fn entity(&self) -> Entity {
                 use std::sync::Arc;
 
                 let mut mp = Props::new();
@@ -30,14 +29,7 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> TokenStream {
                 let mut lb: Vec<Box<dyn Display>> = Vec::new();
                 #(lb.push(#labels);)*
 
-                let node = Node::new(
-                    String::from(#node_query_name),
-                    mp,
-                    lb
-                );
-                let q = Query::default(Arc::new(node));
-
-                Box::new(q)
+                Entity::node("n", &#node_query_name, mp, lb)                
             }
         }
     );
