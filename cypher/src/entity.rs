@@ -111,12 +111,12 @@ pub type Props = HashMap<String, PropType>;
 pub type Label = Box<dyn Display>;
 
 pub trait EntityTrait: 'static + Sized {
-    fn entity(&self) -> Entity;
+    fn entity(&self, nv: &str) -> Entity;
 }
 
 pub enum Entity<'a> {
     Node {
-        nv: &'a str,
+        nv: String,
         node_name: &'a str,
         props: Props,
         labels: Vec<Label>,
@@ -126,7 +126,7 @@ pub enum Entity<'a> {
 }
 
 impl<'a> Entity<'a> {
-    pub fn node(nv: &'a str, node_name: &'a str, props: Props, labels: Vec<Label>) -> Entity<'a> {
+    pub fn node(nv: String, node_name: &'a str, props: Props, labels: Vec<Label>) -> Entity<'a> {
         Entity::Node {
             nv,
             node_name,

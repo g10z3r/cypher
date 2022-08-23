@@ -97,9 +97,9 @@ impl SkipControlTrait for ReturnParamQuery {
 impl ReturnParamTrait for ReturnParamQuery {
     fn r#as(&self, r#as: &str) -> Box<dyn LimitControlTrait> {
         let state = format!(
-            "{prev_state} {node_var} AS {as_val}",
+            "{prev_state} AS {as_val}",
             prev_state = self.state,
-            node_var = self.nv,
+            // node_var = self.nv,
             as_val = r#as
         );
         Box::new(LimitControlQuery(state))
@@ -113,36 +113,36 @@ impl FinalizeTrait for ReturnParamQuery {
 }
 
 pub trait ReturnTrait: 'static {
-    fn r#return(&mut self) -> Box<dyn ReturnParamTrait>;
-    fn return_field(&mut self, field: &str) -> Box<dyn FinalizeTrait>;
+    fn r#return(&mut self, nv: &str) -> Box<dyn ReturnParamTrait>;
+    fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait>;
 }
 
 pub struct ReturnQuery {
-    nv: String,
+    // nv: String,
     state: String,
 }
 
 impl ReturnQuery {
     pub fn new(nv: String, state: String) -> Self {
-        ReturnQuery { nv, state }
+        ReturnQuery { state }
     }
 }
 
 impl ReturnTrait for ReturnQuery {
-    fn r#return(&mut self) -> Box<dyn ReturnParamTrait> {
+    fn r#return(&mut self, nv: &str) -> Box<dyn ReturnParamTrait> {
         let state = format!(
             "{prev_state}\nRETURN {node_var}",
             prev_state = self.state,
-            node_var = self.nv
+            node_var = nv
         );
-        Box::new(ReturnParamQuery::new(self.nv.clone(), state))
+        Box::new(ReturnParamQuery::new(nv.to_string(), state))
     }
 
-    fn return_field(&mut self, field: &str) -> Box<dyn FinalizeTrait> {
+    fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait> {
         let state = format!(
             "{prev_state}\nRETURN {node_var}.{prop_name}",
             prev_state = self.state,
-            node_var = self.nv,
+            node_var = nv,
             prop_name = field
         );
         Box::new(Finalize(state))

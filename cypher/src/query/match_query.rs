@@ -61,20 +61,20 @@ impl MatchConditionQuery {
 }
 
 impl ReturnTrait for MatchConditionQuery {
-    fn r#return(&mut self) -> Box<dyn ReturnParamTrait> {
+    fn r#return(&mut self, nv: &str) -> Box<dyn ReturnParamTrait> {
         let state = format!(
             "{prev_state}\nRETURN {node_var}",
             prev_state = self.state,
-            node_var = self.nv
+            node_var = nv
         );
         Box::new(ReturnParamQuery::new(self.nv.clone(), state))
     }
 
-    fn return_field(&mut self, field: &str) -> Box<dyn FinalizeTrait> {
+    fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn FinalizeTrait> {
         let state = format!(
             "{prev_state}\nRETURN {node_var}.{prop_name}",
             prev_state = self.state,
-            node_var = self.nv,
+            node_var = nv,
             prop_name = field
         );
         Box::new(Finalize(state))
