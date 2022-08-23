@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{TokenStream, Span};
 
 use crate::core::{ast, context::Context};
 
@@ -12,14 +12,15 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> TokenStream {
     let props = collect_props(&cont);
     let labels = collect_labels(&cont);
 
-    let node_ident_name = &input.ident;
     let node_query_name = cont.attrs.name.serialize;
+    let node_ident_name = &input.ident;
+    let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let output = quote!(
         use cypher::query::{QueryTrait, Query};
         use cypher::entity::{Entity, Props, PropType, EntityTrait};
 
-        impl EntityTrait for #node_ident_name {
+        impl #impl_generics EntityTrait for #node_ident_name #ty_generics #where_clause{
             fn entity(&self, nv: &str)-> Entity {
                 use std::sync::Arc;
 
