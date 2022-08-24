@@ -122,21 +122,36 @@ pub enum Entity<'a> {
     Node {
         nv: String,
         node_name: &'a str,
-        props: Props,
-        labels: Vec<Label>,
+        props: Option<Props>,
+        labels: Option<Vec<Label>>,
     },
 
-    Relation,
+    Relation {
+        from_nv: &'a str,
+        to_nv: &'a str,
+        rel_name: &'a str,
+        props: Option<Props>,
+    },
 }
 
 impl<'a> Entity<'a> {
-    /// Create new `Entity::Node`
-    pub fn node(nv: String, node_name: &'a str, props: Props, labels: Vec<Label>) -> Entity<'a> {
+    /// Create new `Entity::Node`.
+    pub fn node<T: Display>(nv: T, node_name: &'a str, props: Option<Props>, labels: Option<Vec<Label>>) -> Entity<'a> {
         Entity::Node {
-            nv,
+            nv: nv.to_string(),
             node_name,
             props,
             labels,
+        }
+    }
+
+    /// Create new `Entity::Relation`.
+    pub fn rel(from_nv: &'a str, to_nv: &'a str, rel_name: &'a str, props: Option<Props>) -> Entity<'a> {
+        Entity::Relation {
+            from_nv,
+            to_nv,
+            rel_name,
+            props,
         }
     }
 }

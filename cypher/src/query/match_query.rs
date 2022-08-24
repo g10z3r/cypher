@@ -1,6 +1,6 @@
-use crate::entity::PropType;
+use crate::entity::{Entity, PropType};
+use crate::query::finalize::FinalizeTrait;
 use crate::query::return_query::{ReturnParamTrait, ReturnQuery, ReturnTrait};
-
 use crate::query::QueryTrait;
 
 /// Comparison operators.
@@ -58,6 +58,12 @@ pub struct MatchConditionQuery {
 impl MatchConditionQuery {
     pub fn new(nv: String, state: String) -> Self {
         MatchConditionQuery { nv, state }
+    }
+}
+
+impl FinalizeTrait for MatchConditionQuery {
+    fn finalize(&self) -> String {
+        self.state.clone()
     }
 }
 
@@ -125,7 +131,15 @@ impl MatchConditionTrait for MatchConditionQuery {
     }
 }
 
-impl QueryTrait for MatchConditionQuery {}
+impl QueryTrait for MatchConditionQuery {
+    fn create(&mut self, entitys: Vec<&Entity>) -> Box<dyn ReturnTrait> {
+        super::create_method(&mut self.state, entitys)
+    }
+
+    fn r#match(&mut self, entity: &Entity) -> Box<dyn MatchTrait> {
+        super::match_method(&mut self.state, entity)
+    }
+}
 
 pub trait MatchTrait: 'static {
     fn r#where(&self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
@@ -145,7 +159,7 @@ impl MatchQuery {
 impl MatchTrait for MatchQuery {
     fn r#where(&self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait> {
         let state = format!(
-            "{prev_state}\nWHERE {node_var}.{prop_name} {operator} {value}",
+            "{prev_state} WHERE {node_var}.{prop_name} {operator} {value}",
             prev_state = self.state,
             node_var = self.nv,
             prop_name = prop,

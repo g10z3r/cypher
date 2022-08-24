@@ -33,9 +33,9 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> Result<TokenStream,
 
                 Entity::node(
                     nv.clone().to_string(), 
-                    &#node_query_name, 
-                    mp, 
-                    lb,
+                    (&#node_query_name), 
+                    if mp.len() > 0 { Some(mp) } else { None }, 
+                    if lb.len() > 0 { Some(lb) } else { None },
                 )                
             }
         }

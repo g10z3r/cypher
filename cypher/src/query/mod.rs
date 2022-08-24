@@ -4,45 +4,71 @@ pub mod return_query;
 
 use crate::entity::Entity;
 use crate::entity::PropType;
+use crate::entity::Props;
 use crate::query::match_query::{MatchQuery, MatchTrait};
 use crate::query::return_query::{ReturnQuery, ReturnTrait};
 
 pub trait QueryTrait: 'static {
-    fn create(&mut self, entitys: Vec<Entity>) -> Box<dyn ReturnTrait> {
-        create_method(entitys)
-    }
+    fn create(&mut self, entitys: Vec<&Entity>) -> Box<dyn ReturnTrait>;
 
-    fn r#match(&self, entity: Entity) -> Box<dyn MatchTrait> {
-        match_method(entity)
-    }
+    fn r#match(&mut self, entity: &Entity) -> Box<dyn MatchTrait>;
 }
 
-pub struct Query;
+pub struct Query {
+    state: String,
+}
 
 impl Query {
-    pub fn new() -> Self {
-        Query
+    pub fn init() -> Self {
+        Query {
+            state: String::new(),
+        }
+    }
+
+    pub fn new(state: String) -> Self {
+        Query { state }
     }
 }
 
-impl QueryTrait for Query {}
+impl QueryTrait for Query {
+    fn create(&mut self, entitys: Vec<&Entity>) -> Box<dyn ReturnTrait> {
+        create_method(&mut self.state, entitys)
+    }
 
-pub(super) fn match_method(entity: Entity) -> Box<dyn MatchTrait> {
+    fn r#match(&mut self, entity: &Entity) -> Box<dyn MatchTrait> {
+        match_method(&mut self.state, entity)
+    }
+}
+
+pub(super) fn match_method(state: &mut str, entity: &Entity) -> Box<dyn MatchTrait> {
     match entity {
         Entity::Node { nv, node_name, .. } => {
-            let state = format!(
+            let new_state = format!(
                 "MATCH ({node_var}:{node_name})",
                 node_var = nv,
                 node_name = node_name
             );
-            Box::new(MatchQuery::new(nv.to_string(), state))
+
+            let state = format!(
+                "{state}{indent}{new_state}",
+                state = state,
+                indent = if state.len() > 0 { "\n" } else { "" },
+                new_state = new_state
+            );
+            Box::new(MatchQuery::new(nv.to_string(), state.to_string()))
         }
-        Entity::Relation => todo!(),
+
+        Entity::Relation {
+            from_nv,
+            to_nv,
+            rel_name,
+            props,
+        } => todo!(),
     }
 }
 
-pub(super) fn create_method(entitys: Vec<Entity>) -> Box<dyn ReturnTrait> {
-    let state = entitys
+pub(super) fn create_method(state: &mut str, entitys: Vec<&Entity>) -> Box<dyn ReturnTrait> {
+    let new_state = entitys
         .iter()
         .enumerate()
         .map(|(i, entity)| match entity {
@@ -52,15 +78,8 @@ pub(super) fn create_method(entitys: Vec<Entity>) -> Box<dyn ReturnTrait> {
                 props,
                 labels,
             } => {
-                if props.len() > 0 {
-                    let mut props: String = props
-                        .into_iter()
-                        .filter(|(_, v)| **v != PropType::Null)
-                        .map(|(k, v)| format!("{}: {},", k, v.to_prop()))
-                        .collect();
-                    props.pop();
-
-                    let labels: String = labels
+                let labels = if let Some(labels) = labels {
+                    labels
                         .iter()
                         .map(|label| {
                             format!(
@@ -69,29 +88,77 @@ pub(super) fn create_method(entitys: Vec<Entity>) -> Box<dyn ReturnTrait> {
                                 label_name = label.to_string()
                             )
                         })
-                        .collect();
+                        .collect::<String>()
+                } else {
+                    String::new()
+                };
 
+                if let Some(props) = props {
                     format!(
                         "{indent}CREATE ({node_var}:{node_name} {{ {props_obj} }}){labels}",
                         indent = if i != 0 { "\n" } else { "" },
                         node_var = nv,
                         node_name = node_name,
-                        props_obj = props,
+                        props_obj = props_to_string(props),
                         labels = labels,
                     )
                 } else {
                     format!(
-                        "{indent}CREATE ({node_var}:{node_name})",
+                        "{indent}CREATE ({node_var}:{node_name}){labels}",
                         indent = if i != 0 { "\n" } else { "" },
                         node_var = nv,
-                        node_name = node_name
+                        node_name = node_name,
+                        labels = labels,
                     )
                 }
             }
 
-            Entity::Relation => todo!(),
+            Entity::Relation {
+                from_nv,
+                to_nv,
+                rel_name,
+                props,
+            } => {
+                if let Some(props) = props {
+                    format!(
+                        "{start_q}({from_nv})-[:{rel_name} {{ {props_obj} }}]->({to_nv}){is_next}",
+                        start_q = if i == 0 { "CREATE " } else { "" },
+                        from_nv = from_nv,
+                        rel_name = rel_name,
+                        props_obj = props_to_string(props),
+                        to_nv = to_nv,
+                        is_next = if i == entitys.len() { "," } else { "" }
+                    )
+                } else {
+                    format!(
+                        "{start_q}({from_nv})-[:{rel_name}]->({to_nv}){is_next}",
+                        start_q = if i == 0 { "CREATE " } else { "" },
+                        from_nv = from_nv,
+                        rel_name = rel_name,
+                        to_nv = to_nv,
+                        is_next = if i < entitys.len() - 1 { ",\n\t" } else { "" }
+                    )
+                }
+            }
         })
         .collect::<String>();
 
-    Box::new(ReturnQuery::new(state))
+    let state = format!(
+        "{state}{indent}{new_state}",
+        state = state,
+        indent = if state.len() > 0 { "\n" } else { "" },
+        new_state = new_state
+    );
+    Box::new(ReturnQuery::new(state.to_string()))
+}
+
+fn props_to_string(props: &Props) -> String {
+    let mut props: String = props
+        .into_iter()
+        .filter(|(_, v)| **v != PropType::Null)
+        .map(|(k, v)| format!("{}: {},", k, v.to_prop()))
+        .collect();
+    props.pop();
+
+    props
 }

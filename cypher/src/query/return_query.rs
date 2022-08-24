@@ -110,7 +110,7 @@ impl FinalizeTrait for ReturnParamQuery {
     }
 }
 
-pub trait ReturnTrait: 'static {
+pub trait ReturnTrait: 'static + FinalizeTrait {
     fn r#return(&mut self, nv: &str, field: Option<&str>) -> Box<dyn ReturnParamTrait>;
 }
 
@@ -127,6 +127,12 @@ impl ReturnQuery {
 impl ReturnTrait for ReturnQuery {
     fn r#return(&mut self, nv: &str, field: Option<&str>) -> Box<dyn ReturnParamTrait> {
         return_method(&self.state, nv, field)
+    }
+}
+
+impl FinalizeTrait for ReturnQuery {
+    fn finalize(&self) -> String {
+        self.state.clone()
     }
 }
 
