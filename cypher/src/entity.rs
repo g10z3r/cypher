@@ -113,8 +113,81 @@ pub type Props = HashMap<String, PropType>;
 /// Inner wrapper for any type that can be cast to a string and stored as a node label
 pub type Label = Box<dyn Display>;
 
-pub trait EntityTrait: 'static + Sized {
-    fn into_entity(&self, nv: &str) -> Entity;
+pub trait NodeTrait: 'static + Sized {
+    fn node(&self, nv: &str) -> Node;
+}
+
+pub struct Node<'a> {
+    nv: String,
+    node_name: &'a str,
+    props: Option<Props>,
+    labels: Option<Vec<Label>>,
+}
+
+impl<'a> Node<'a> {
+    pub fn new<T: Display>(
+        nv: T,
+        node_name: &'a str,
+        props: Option<Props>,
+        labels: Option<Vec<Label>>,
+    ) -> Self {
+        Node {
+            nv: nv.to_string(),
+            node_name,
+            props,
+            labels,
+        }
+    }
+
+    pub fn nv(&self) -> &str {
+        &self.nv
+    }
+
+    pub fn node_name(&self) -> &str {
+        &self.node_name
+    }
+
+    pub fn props(&self) -> &Option<Props> {
+        &self.props
+    }
+
+    pub fn labels(&self) -> &Option<Vec<Label>> {
+        &self.labels
+    }
+}
+
+pub struct Relation<'a> {
+    from: Node<'a>,
+    to: Node<'a>,
+    name: &'a str,
+    props: Option<Props>,
+}
+
+impl<'a> Relation<'a> {
+    pub fn new(from: Node<'a>, to: Node<'a>, name: &'a str, props: Option<Props>) -> Self {
+        Relation {
+            from,
+            to,
+            name,
+            props,
+        }
+    }
+
+    pub fn from_node(&self) -> &Node {
+        &self.from
+    }
+
+    pub fn to_node(&self) -> &Node {
+        &self.to
+    }
+
+    pub fn name(&self) -> &str {
+        self.name
+    }
+
+    pub fn props(&self) -> &Option<Props> {
+        &self.props
+    }
 }
 
 /// Entities existing in Neo4j. Nodes and relationships.
@@ -127,31 +200,31 @@ pub enum Entity<'a> {
     },
 
     Relation {
-        from_nv: &'a str,
-        to_nv: &'a str,
-        rel_name: &'a str,
+        from: Node<'a>,
+        to: Node<'a>,
+        name: &'a str,
         props: Option<Props>,
     },
 }
 
-impl<'a> Entity<'a> {
-    /// Create new `Entity::Node`.
-    pub fn node<T: Display>(nv: T, node_name: &'a str, props: Option<Props>, labels: Option<Vec<Label>>) -> Entity<'a> {
+impl<'a> From<Node<'a>> for Entity<'a> {
+    fn from(node: Node<'a>) -> Self {
         Entity::Node {
-            nv: nv.to_string(),
-            node_name,
-            props,
-            labels,
+            nv: node.nv,
+            node_name: node.node_name,
+            props: node.props,
+            labels: node.labels,
         }
     }
+}
 
-    /// Create new `Entity::Relation`.
-    pub fn rel(from_nv: &'a str, to_nv: &'a str, rel_name: &'a str, props: Option<Props>) -> Entity<'a> {
+impl<'a> From<Relation<'a>> for Entity<'a> {
+    fn from(rel: Relation<'a>) -> Self {
         Entity::Relation {
-            from_nv,
-            to_nv,
-            rel_name,
-            props,
+            from: rel.from,
+            to: rel.to,
+            name: rel.name,
+            props: rel.props,
         }
     }
 }

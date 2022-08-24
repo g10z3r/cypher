@@ -11,7 +11,7 @@ use crate::query::return_query::{ReturnQuery, ReturnTrait};
 pub trait QueryTrait: 'static {
     fn create(&mut self, entitys: Vec<&Entity>) -> Box<dyn ReturnTrait>;
 
-    fn r#match(&mut self, entity: &Entity) -> Box<dyn MatchTrait>;
+    fn r#match(&mut self, entity: &Entity, optional: bool) -> Box<dyn MatchTrait>;
 }
 
 pub struct Query {
@@ -35,12 +35,16 @@ impl QueryTrait for Query {
         create_method(&mut self.state, entitys)
     }
 
-    fn r#match(&mut self, entity: &Entity) -> Box<dyn MatchTrait> {
-        match_method(&mut self.state, entity)
+    fn r#match(&mut self, entity: &Entity, optional: bool) -> Box<dyn MatchTrait> {
+        match_method(&mut self.state, entity, optional)
     }
 }
 
-pub(super) fn match_method(state: &mut str, entity: &Entity) -> Box<dyn MatchTrait> {
+pub(super) fn match_method(
+    state: &mut str,
+    entity: &Entity,
+    optional: bool,
+) -> Box<dyn MatchTrait> {
     match entity {
         Entity::Node { nv, node_name, .. } => {
             let new_state = format!(
@@ -55,15 +59,34 @@ pub(super) fn match_method(state: &mut str, entity: &Entity) -> Box<dyn MatchTra
                 indent = if state.len() > 0 { "\n" } else { "" },
                 new_state = new_state
             );
+
             Box::new(MatchQuery::new(nv.to_string(), state.to_string()))
         }
 
-        Entity::Relation {
-            from_nv,
-            to_nv,
-            rel_name,
-            props,
-        } => todo!(),
+        Entity::Relation { from, to, name, .. } => {
+            let new_state = format!(
+                "{opt}MATCH ({from_nv}{from_name})-[r:{rel_name}]->({to_nv}{to_name})",
+                opt = if optional {
+                    format!("OPTIONAL ")
+                } else {
+                    String::new()
+                },
+                from_nv = from.nv(),
+                from_name = format!(":{}", from.node_name()),
+                rel_name = name,
+                to_nv = to.nv(),
+                to_name = format!(":{}", to.node_name()),
+            );
+
+            let state = format!(
+                "{state}{indent}{new_state}",
+                state = state,
+                indent = if state.len() > 0 { "\n" } else { "" },
+                new_state = new_state
+            );
+
+            Box::new(MatchQuery::new(String::new(), state.to_string()))
+        }
     }
 }
 
@@ -114,28 +137,28 @@ pub(super) fn create_method(state: &mut str, entitys: Vec<&Entity>) -> Box<dyn R
             }
 
             Entity::Relation {
-                from_nv,
-                to_nv,
-                rel_name,
+                from,
+                to,
+                name,
                 props,
             } => {
                 if let Some(props) = props {
                     format!(
                         "{start_q}({from_nv})-[:{rel_name} {{ {props_obj} }}]->({to_nv}){is_next}",
                         start_q = if i == 0 { "CREATE " } else { "" },
-                        from_nv = from_nv,
-                        rel_name = rel_name,
+                        from_nv = from.nv(),
+                        rel_name = name,
                         props_obj = props_to_string(props),
-                        to_nv = to_nv,
+                        to_nv = to.nv(),
                         is_next = if i == entitys.len() { "," } else { "" }
                     )
                 } else {
                     format!(
                         "{start_q}({from_nv})-[:{rel_name}]->({to_nv}){is_next}",
                         start_q = if i == 0 { "CREATE " } else { "" },
-                        from_nv = from_nv,
-                        rel_name = rel_name,
-                        to_nv = to_nv,
+                        from_nv = from.nv(),
+                        rel_name = name,
+                        to_nv = to.nv(),
                         is_next = if i < entitys.len() - 1 { ",\n\t" } else { "" }
                     )
                 }

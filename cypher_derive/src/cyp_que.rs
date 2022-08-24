@@ -19,10 +19,10 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> Result<TokenStream,
 
     let output = quote!(
         use cypher::query::{QueryTrait, Query};
-        use cypher::entity::{Entity, Props, PropType, EntityTrait};
+        use cypher::entity::{Entity, Node, Props, PropType, NodeTrait};
 
-        impl #impl_generics EntityTrait for #node_ident_name #ty_generics #where_clause{
-            fn into_entity(&self, nv: &str)-> Entity {
+        impl #impl_generics NodeTrait for #node_ident_name #ty_generics #where_clause{
+            fn node(&self, nv: &str)-> Node {
                 use std::sync::Arc;
 
                 let mut mp = Props::new();
@@ -31,12 +31,12 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> Result<TokenStream,
                 let mut lb: Vec<Box<dyn Display>> = Vec::new();
                 #(lb.push(#labels);)*
 
-                Entity::node(
+                Node::new(
                     nv.clone().to_string(), 
                     (&#node_query_name), 
                     if mp.len() > 0 { Some(mp) } else { None }, 
                     if lb.len() > 0 { Some(lb) } else { None },
-                )                
+                )                             
             }
         }
     );
