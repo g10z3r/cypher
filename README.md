@@ -35,26 +35,46 @@ This attribute can be used when in your code you wanted to have the name **A**, 
 
 * **#[cypher(rename = "...")]**
 
-Rename attribute also can used as s field attribute. The principle of it's operation is similar to that described above. It should be used when you want to automatically change the field name when you build a query with a properties object of Neo4j entity.
+    Rename attribute also can used as s field attribute. The principle of it's operation is similar to that described above. It should be used when you want to automatically change the field name when you build a query with a properties object of Neo4j entity.
 
 * **#[cypher(skip)]**
 
-Use this attribute when you what to hide some struct field when you build a query.
+    Use this attribute when you what to hide some struct field when you build a query.
 
 * **#[cypher(label)]**
 
-You can use such attribute if you want the field value to be used as the label of the node.
-It is recommended to use enums as a value of such field. 
+    You can use such attribute if you want the field value to be used as the label of the node.
+    It is recommended to use enums as a value of such field. 
 
 * **#[cypher(default)]**
 
-If the field type is some kind of `Option<T>` you can use this att and when field value will be `None`, default value for this type will be set. 
+    If the field type is some kind of `Option<T>` you can use this att and when field value will be `None`, default value for this type will be set. 
 
-***Attention***: For the type that is used with the simple attribute **default**, there must be a mandatory implementation of the trait `Default`
+    ***Attention***: For the type that is used with the simple attribute **default**, there must be a mandatory implementation of the trait `Default`
 
 * **#[cypher(default = "...")]**
 
-If using a default value for the whole type doesn't work for you, you can use the default value for a one field. The default value should always be specified as a string, but it will be cast to the required type when the query is generated.
+    If using a default value for the whole type doesn't work for you, you can use the default value for a one field. The default value should always be specified as a string, but it will be cast to the required type when the query is generated.
+
+### Entities
+
+* **Node**
+
+    Create node:
+
+    ```rust
+    let node = Entity::node("n", "Profile", None, None);
+    ```
+
+    But you can set derive attribute to the struct `#[derive(Debug, Clone, CypQueSet)]` and node will be automatically generated!
+
+* **Relation**
+  
+    Create relation:
+
+    ```rust
+    let rel = Entity::rel("n1", "n2", "TEST", None);
+    ```
 
 ### Builder
 
@@ -96,6 +116,8 @@ The query builder methods can be represented as a tree like this:
 ```
 
 ### Example
+
+#### Node
 
 ```rust
 use std::fmt::Display;
@@ -166,7 +188,7 @@ fn main() {
 
 So, the query builder automatically generated such query for you:
 
-```
+```sql
 CREATE (n:Profile { password: '1234f4321',level: 5,name: 'mi1fhunter',age: 32,friends: ['Bob','Tom','Sam'],online: false })
 SET n:User
 RETURN n
@@ -187,7 +209,7 @@ let query = Query::new()
 
 The result will be like this: 
 
-```
+```sql
 MATCH (n:Profile)
 WHERE n.age = 40 OR n.age = 23 AND n.name = 'admin' 
 RETURN n
@@ -205,7 +227,7 @@ let query = Query::new()
 
 The result will be:
 
-```
+```sql
 CREATE (n:Profile { level: 5,age: 32,friends: ['Bob','Tom','Sam'],uname: 'mi1fhunter',password: '1234f4321',online: false })
 SET n:User
 RETURN n.age
@@ -224,8 +246,33 @@ let query = Query::new()
 
 Result:
 
-```
+```sql
 CREATE (n:Profile { age: 32,uname: 'mi1fhunter',online: false,level: 5,friends: ['Bob','Tom','Sam'],password: '1234f4321' })
 SET n:User
 RETURN n AS node
+```
+
+#### Relation
+
+```rust 
+// Of course, instead of None, you can specify an object `Props`.
+let rel1 = Entity::rel("n1", "n2", ":SUBSCRIBE", None);
+let rel2 = Entity::rel("n2", "n1", ":SUBSCRIBE", None);
+
+let query = Query::init()
+    .r#match(&model.into_entity("n1"))
+    .r#where("age", CompOper::Equal, PropType::int(1))        
+    .r#match(&model.into_entity("n1"))
+    .r#where("age", CompOper::Equal, PropType::int(10))
+    .create(vec![&rel, &re2])
+    .finalize();
+```
+
+Result:
+
+```sql
+MATCH (n1:Test) WHERE n1.age = 1 AND n1.level = 10 
+MATCH (n1:Test) WHERE n1.age = 10
+CREATE (n1)-[:TEST]->(n2),
+        (n2)-[::SUBSCRIBE]->(n1)
 ```
