@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "cypher", 
+    "neo4j_cypher", 
     "cypher_derive"   
 ]

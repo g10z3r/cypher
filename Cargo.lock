@@ -3,13 +3,6 @@
 version = 3
 
 [[package]]
-name = "cypher"
-version = "0.1.1"
-dependencies = [
- "cypher_derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "cypher_derive"
 version = "0.1.1"
 dependencies = [
@@ -31,6 +24,13 @@ dependencies = [
  "proc_macro_roids",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "neo4j_cypher"
+version = "0.1.1"
+dependencies = [
+ "cypher_derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

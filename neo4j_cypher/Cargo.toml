@@ -1,5 +1,5 @@
 [package]
-name = "cypher"
+name = "neo4j_cypher"
 version = "0.1.1"
 authors = ["I0HuKc <spaixel.info@gmail.com>"]
 keywords = ["neo4j", "cypher"]
