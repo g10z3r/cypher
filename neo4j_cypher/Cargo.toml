@@ -9,7 +9,7 @@ license = "BSD-2-Clause"
 edition = "2021"
 
 [dependencies]
-cypher_derive = { veriosn = "=0.1.1", optional = true }
+cypher_derive = { version = "0.1.1", optional = true }
 
 [features]
 derive = ["cypher_derive"]
