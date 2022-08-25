@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "cypher_derive"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "proc-macro-error",
  "proc-macro2",
@@ -15,9 +15,9 @@ dependencies = [
 
 [[package]]
 name = "cypher_derive"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "682fa99ef7007849ea1881253da233bb12a56972063e128f9b5954fb5a0ebe47"
+checksum = "1ae2c56e20770198292c1db330c68f56af9a9d28cc7e65c55ae4aed739cf4947"
 dependencies = [
  "proc-macro-error",
  "proc-macro2",
@@ -28,9 +28,9 @@ dependencies = [
 
 [[package]]
 name = "neo4j_cypher"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
- "cypher_derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "cypher_derive 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
