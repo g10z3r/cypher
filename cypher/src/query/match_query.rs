@@ -40,37 +40,86 @@ impl std::fmt::Display for CompOper {
 }
 
 pub trait MatchActionTrait: 'static + ReturnTrait {
+    /// **DELETE** query function.  
     fn delete(&self) -> Box<dyn ReturnTrait>;
+    /// **DELETE DETACH** query function.  
     fn delete_detach(&self) -> Box<dyn ReturnTrait>;
 
+    /// Pure **SET** query function.  
+    ///
+    /// Mostly used in internal methods that form shorter and more specialized functions
+    /// or if you want to use types other than `String`, `Int` `Bool`.
     fn set(&self, prop: &str, value: PropType) -> Box<dyn ReturnTrait>;
 
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `SET n.prop = '...'`
     fn set_str(&self, prop: &str, value: &str) -> Box<dyn ReturnTrait>;
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `SET n.prop = '...'`
     fn set_str_var(&self, nv: &str, prop: &str, value: &str) -> Box<dyn ReturnTrait>;
 
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `SET n.prop = 0`
     fn set_int(&self, prop: &str, value: isize) -> Box<dyn ReturnTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `SET n.prop = 0`
     fn set_int_var(&self, nv: &str, prop: &str, value: isize) -> Box<dyn ReturnTrait>;
 
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `SET n.prop = true`
     fn set_bool(&self, prop: &str, value: bool) -> Box<dyn ReturnTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `SET n.prop = true`
     fn set_bool_var(&self, nv: &str, prop: &str, value: bool) -> Box<dyn ReturnTrait>;
 
+    /// Pure **SET** query function with custom var.  
+    ///
+    /// Mostly used in internal methods that form shorter and more specialized functions
+    /// or if you want to use types other than `String`, `Int` `Bool`.
     fn set_var(&self, nv: &str, prop: &str, value: PropType) -> Box<dyn ReturnTrait>;
 }
 
 pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
+    /// Pure **AND** query function.  
+    ///
+    /// Mostly used in internal methods that form shorter and more specialized functions
+    /// or if you want to use types other than `String`, `Int` `Bool`.
     fn and(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
-
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `AND n.prop = '...'`
     fn and_eq_str(&mut self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `AND n.prop = '...'`
     fn and_eq_str_var(&mut self, nv: &str, prop: &str, value: &str)
         -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `AND n.prop = 0`
     fn and_eq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `AND n.prop = 0`
     fn and_eq_int_var(
         &mut self,
         nv: &str,
         prop: &str,
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `AND n.prop = true`
     fn and_eq_bool(&mut self, prop: &str, value: bool) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `AND n.prop = true`
     fn and_eq_bool_var(
         &mut self,
         nv: &str,
@@ -78,7 +127,13 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: bool,
     ) -> Box<dyn MatchConditionTrait>;
 
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `AND n.prop > 0`
     fn and_more_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `AND n.prop > 0`
     fn and_more_int_var(
         &mut self,
         nv: &str,
@@ -86,7 +141,13 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `AND n.prop < 0`
     fn and_less_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `AND n.prop < 0`
     fn and_less_int_var(
         &mut self,
         nv: &str,
@@ -94,7 +155,13 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `AND n.prop >= 0`
     fn and_moreq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `AND n.prop >= 0`
     fn and_moreq_int_var(
         &mut self,
         nv: &str,
@@ -102,7 +169,13 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    /// A short use case for the where function, assuming the following final result:
+    ///
+    /// `AND n.prop <= 0`
     fn and_leseq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    /// A short use case for the where function with custom var, assuming the following final result:
+    ///
+    /// `AND n.prop <= 0`
     fn and_leseq_int_var(
         &mut self,
         nv: &str,
@@ -110,6 +183,10 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    /// Pure **AND** query function with custom var.  
+    ///
+    /// Mostly used in internal methods that form shorter and more specialized functions
+    /// or if you want to use types other than `String`, `Int` `Bool`.
     fn and_var(
         &mut self,
         nv: &str,
@@ -118,6 +195,10 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         eq: PropType,
     ) -> Box<dyn MatchConditionTrait>;
 
+    /// Pure **OR** query function.  
+    ///
+    /// Mostly used in internal methods that form shorter and more specialized functions
+    /// or if you want to use types other than `String`, `Int` `Bool`.
     fn or(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
 
     fn or_eq_str(&mut self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait>;
@@ -163,6 +244,10 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    /// Pure **OR** query function with custom var.  
+    ///
+    /// Mostly used in internal methods that form shorter and more specialized functions
+    /// or if you want to use types other than `String`, `Int` `Bool`.
     fn or_var(
         &mut self,
         nv: &str,

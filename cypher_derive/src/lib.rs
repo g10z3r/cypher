@@ -1,5 +1,5 @@
 mod core;
-mod cyp_que;
+mod cypque;
 
 #[macro_use]
 mod fragment;
@@ -12,10 +12,10 @@ extern crate syn;
 use proc_macro::TokenStream;
 use syn::DeriveInput;
 
-#[proc_macro_derive(CypQueSet, attributes(cypher))]
+#[proc_macro_derive(CypQue, attributes(cypher))]
 pub fn derive_cypue(input: TokenStream) -> TokenStream {
     let mut input = parse_macro_input!(input as DeriveInput);
-    cyp_que::expand_derive_cypque(&mut input)
+    cypque::expand_derive_cypque(&mut input)
         .unwrap_or_else(to_compile_errors)
         .into()
 }
