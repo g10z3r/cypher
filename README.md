@@ -28,7 +28,7 @@ cypher = { version = "0.1.0", features=["derive"] }
 
 * **#[cypher(rename = "...")]**
 
-This attribute can be used when in your code you wanted to have the name **A**, but in Neo4j you wanted to save the structure as a node with name **B**.
+    This attribute can be used when in your code you wanted to have the name **A**, but in Neo4j you wanted to save the structure as a node with name **B**.
 
 
 ### Field attributes
@@ -63,7 +63,7 @@ This attribute can be used when in your code you wanted to have the name **A**, 
     Create node:
 
     ```rust
-    let node = Entity::node("n", "Profile", None, None);
+    let node = Node::new("n", "Profile", None, None);
     ```
 
     But you can set derive attribute to the struct `#[derive(Debug, Clone, CypQueSet)]` and node will be automatically generated!
@@ -73,47 +73,12 @@ This attribute can be used when in your code you wanted to have the name **A**, 
     Create relation:
 
     ```rust
-    let rel = Entity::rel("n1", "n2", "TEST", None);
+    let rel = Relation::new(a1.node("n1"), a2.node("n2"), "SUBSCRIBE", None);
     ```
 
-### Builder
+    Where `a1` and `a2` it's a structs with `CypQue` derive marco.
 
-The query builder methods can be represented as a tree like this:
-
-```
-.
-├── create
-│   └── return
-│       ├── as
-│       │   ├── limit
-│       │   │   └── finalize
-│       │   └── skip
-│       │       └── finalize
-│       ├── limit
-│       │   ├── skip
-│       │   │   └── finalize
-│       │   └── finalize
-│       ├── skip
-│       │   └── finalize
-│       └── finalize
-│
-└── match
-    └── where
-        ├── and
-        │   └── ...
-        ├── or
-        │   └── ...
-        ├── set
-        │   └── return
-        │       └── ...
-        ├── create
-        │   └── ...
-        ├── match
-        │   └── ...
-        └── delete
-            └── return
-                └── ...
-```
+Of course, instead of **None**, you can specify an object of `Props` or vector of `Label`.
 
 ### Example
 
@@ -177,12 +142,12 @@ fn main() {
     };
 
     // Let's build some query
-    let query = Query::new()
-        .create(vec![model.into_entity("n")])
+    let query = Query::init()
+        .create(vec![&a1.node("n").into()])
         .r#return("n", None)
         .finalize();
 
-    println!("{}", q);
+    println!("{}", query);
 }
 ```
 
@@ -198,29 +163,29 @@ RETURN n
 Example of creating a match query:
 
 ```rust
-let query = Query::new()
-    .r#match(model.into_entity("n"))
-    .r#where("age", CompOper::Equal, PropType::int(40))
-    .or("age", CompOper::Equal, PropType::int(23))
-    .and("name", CompOper::Equal, PropType::str("admin"))
-    .r#return("n", None)
+let query = Query::init()
+    .r#match(&a1.node("n1").into(), false)
+    .where_eq_str("name", "admin")       
+    .r#match(&a2.node("n2").into(), false)
+    .where_eq_str("name", "dev")
+    .return_many(vec!["n1", "n2"])
     .finalize();
 ```
 
 The result will be like this: 
 
 ```sql
-MATCH (n:Profile)
-WHERE n.age = 40 OR n.age = 23 AND n.name = 'admin' 
-RETURN n
+MATCH (n1:Profile) WHERE n1.name = 'admin'
+MATCH (n2:Profile) WHERE n2.name = 'dev'
+RETURN n1,n2
 ```
 
 
 If you need to return the value of some propertie or get another `var` name, you can write it like this:
 
 ```rust
-let query = Query::new()
-    .create(vec![model.into_entity("n")])
+let query = Query::init()
+    .create(vec![&model.node("n").into()])
     .r#return("n", Some("age"))
     .finalize();
 ```
@@ -228,17 +193,16 @@ let query = Query::new()
 The result will be:
 
 ```sql
-CREATE (n:Profile { level: 5,age: 32,friends: ['Bob','Tom','Sam'],uname: 'mi1fhunter',password: '1234f4321',online: false })
+CREATE (n:Profile { name: 'admin',friends: ['Bob','Tom','Sam'],password: '1234f4321',online: false,level: 5,age: 32 })
 SET n:User
 RETURN n.age
-
 ```
 
 OR
 
 ```rust
-let query = Query::new()
-    .create(vec![model.into_entity("n")])
+let query = Query::init()
+    .create(vec![&model.node("n").into()])
     .r#return("n", None)
     .r#as("node")
     .finalize();
@@ -255,16 +219,16 @@ RETURN n AS node
 #### Relation
 
 ```rust 
-// Of course, instead of None, you can specify an object `Props`.
-let rel1 = Entity::rel("n1", "n2", ":SUBSCRIBE", None);
-let rel2 = Entity::rel("n2", "n1", ":SUBSCRIBE", None);
+let rel1 = Entity::rel("n1", "n2", "SUBSCRIBE", None);
+let rel2 = Entity::rel("n2", "n1", "SUBSCRIBE", None);
 
 let query = Query::init()
-    .r#match(&model.into_entity("n1"))
-    .r#where("age", CompOper::Equal, PropType::int(1))        
-    .r#match(&model.into_entity("n1"))
-    .r#where("age", CompOper::Equal, PropType::int(10))
-    .create(vec![&rel, &re2])
+    .r#match(&a1.node("n1").into(), false)
+    .where_eq_str("name", "admin")
+    .r#match(&a2.node("n2").into(), false)
+    .where_eq_str("name", "dev")
+    .return_many(vec!["n1", "n2"])
+    .create(vec![&rel1.into(), &rel2.into()])
     .finalize();
 ```
 
@@ -273,6 +237,6 @@ Result:
 ```sql
 MATCH (n1:Test) WHERE n1.age = 1 AND n1.level = 10 
 MATCH (n1:Test) WHERE n1.age = 10
-CREATE (n1)-[:TEST]->(n2),
-        (n2)-[::SUBSCRIBE]->(n1)
+CREATE (n1)-[:SUBSCRIBE]->(n2),
+        (n2)-[:SUBSCRIBE]->(n1)
 ```
