@@ -235,8 +235,8 @@ let query = Query::init()
 Result:
 
 ```sql
-MATCH (n1:Test) WHERE n1.age = 1 AND n1.level = 10 
-MATCH (n1:Test) WHERE n1.age = 10
+MATCH (n1:Profile) WHERE n1.age = 1 AND n1.level = 10 
+MATCH (n1:Profile) WHERE n1.age = 10
 CREATE (n1)-[:SUBSCRIBE]->(n2),
         (n2)-[:SUBSCRIBE]->(n1)
 ```
