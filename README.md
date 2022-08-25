@@ -144,7 +144,7 @@ fn main() {
     // Let's build some query
     let query = Query::init()
         .create(vec![&a1.node("n").into()])
-        .r#return("n", None)
+        .r#return("n")
         .finalize();
 
     println!("{}", query);
@@ -186,7 +186,7 @@ If you need to return the value of some propertie or get another `var` name, you
 ```rust
 let query = Query::init()
     .create(vec![&model.node("n").into()])
-    .r#return("n", Some("age"))
+    .r#return_field("n", "age")
     .finalize();
 ```
 
@@ -203,7 +203,7 @@ OR
 ```rust
 let query = Query::init()
     .create(vec![&model.node("n").into()])
-    .r#return("n", None)
+    .r#return("n")
     .r#as("node")
     .finalize();
 ```

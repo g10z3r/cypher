@@ -275,8 +275,12 @@ impl FinalizeTrait for MatchConditionQuery {
 }
 
 impl ReturnTrait for MatchConditionQuery {
-    fn r#return(&mut self, nv: &str, field: Option<&str>) -> Box<dyn ReturnParamTrait> {
-        super::return_query::return_method(&self.state, vec![nv], field)
+    fn r#return(&mut self, nv: &str) -> Box<dyn ReturnParamTrait> {
+        super::return_query::return_method(&self.state, vec![nv], None)
+    }
+
+    fn return_field(&mut self, nv: &str, field: &str) -> Box<dyn ReturnParamTrait> {
+        super::return_query::return_method(&self.state, vec![nv], Some(field))
     }
 
     fn return_many(&mut self, nvs: Vec<&str>) -> Box<dyn ReturnParamTrait> {
