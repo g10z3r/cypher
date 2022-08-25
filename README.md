@@ -1,7 +1,10 @@
-<p align="center"><img height="200" src="assets/cypher_logo.png" alt="go-excel"></p>
+<p align="center"><img height="200" src="assets/cypher_logo.png"></p>
 
 <h1 align="center">Neo4j Query Builder</h1>
 <p align="center">
+    <a href="https://crates.io/crates/neo4j_cypher">
+        <img src="https://img.shields.io/crates/v/neo4j_cypher" alt="Licenses">
+    </a>
     <a href="https://opensource.org/licenses/BSD-3-Clause">
         <img src="https://img.shields.io/github/license/I0HuKc/cypher" alt="Licenses">
     </a>
@@ -18,7 +21,7 @@ A flexible and intuitive query builder for Neo4j and Cypher. Write queries in Ru
 ## Installation
 
 ```toml
-cypher = { git = "https://github.com/I0HuKc/cypher", features=["derive"] }
+neo4j_cypher = { version = "0.1.2", features=["derive"] }
 ```
 
 
