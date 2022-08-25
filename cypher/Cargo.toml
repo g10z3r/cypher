@@ -1,7 +1,7 @@
 [package]
 name = "cypher"
 version = "0.1.1"
-authors = ["I0HuKc <web-disain@mail.ua>"]
+authors = ["I0HuKc <spaixel.info@gmail.com>"]
 keywords = ["neo4j", "cypher"]
 description = "A flexible and intuitive query builder for Neo4j and Cypher."
 documentation = "https://github.com/I0HuKc/cypher#usage"
