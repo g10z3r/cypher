@@ -5,12 +5,11 @@ authors = ["I0HuKc <spaixel.info@gmail.com>"]
 keywords = ["neo4j", "cypher"]
 description = "A flexible and intuitive query builder for Neo4j and Cypher."
 documentation = "https://github.com/I0HuKc/cypher"
-readme = "../README.md"
 license = "BSD-2-Clause"
 edition = "2021"
 
 [dependencies]
-cypher_derive = { veriosn="0.1.1", optional = true }
+cypher_derive = { veriosn = "=0.1.1", optional = true }
 
 [features]
 derive = ["cypher_derive"]
