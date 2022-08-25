@@ -87,8 +87,8 @@ Of course, instead of **None**, you can specify an object of `Props` or vector o
 ```rust
 use std::fmt::Display;
 
-use cypher::query::match_query::CompOper;
-use cypher::CypQueSet;
+use neo4j_cypher::query::match_query::CompOper;
+use neo4j_cypher::CypQueSet;
 
 /// Example of access levels in the system
 #[derive(Debug, Clone)]
