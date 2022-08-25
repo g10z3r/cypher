@@ -2,7 +2,6 @@ use syn::punctuated::Punctuated;
 
 use super::{attr, context::Context};
 
-/// Исходная структура данных, аннотированная #[derive(Cypherize)]
 pub struct Container<'a> {
     pub ident: syn::Ident,
     pub attrs: attr::Container,
@@ -13,7 +12,6 @@ pub struct Container<'a> {
 
 pub enum Style {
     Struct,
-    Newtype,
 }
 
 pub struct Field<'a> {

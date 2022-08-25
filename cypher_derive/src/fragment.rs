@@ -2,18 +2,13 @@ use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::token;
 
+#[allow(dead_code)]
 pub enum Fragment {
     /// Tokens that can be used as an expression.
     Expr(TokenStream),
     /// Tokens that can be used inside a block. The surrounding curly braces are
     /// not part of these tokens.
     Block(TokenStream),
-}
-
-macro_rules! quote_block {
-    ($($tt:tt)*) => {
-        $crate::fragment::Fragment::Block(quote!($($tt)*))
-    }
 }
 
 pub struct Expr(pub Fragment);

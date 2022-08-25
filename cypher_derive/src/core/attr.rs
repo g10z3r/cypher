@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::parse::{self, Parse, ParseStream};
+use syn::parse::{self, Parse};
 use syn::DeriveInput;
 use syn::Ident;
 use syn::Meta::{List, NameValue, Path};
@@ -47,12 +47,14 @@ impl<'a, T> Attr<'a, T> {
         }
     }
 
+    #[allow(dead_code)]
     fn set_opt<A: ToTokens>(&mut self, obj: A, value: Option<T>) {
         if let Some(value) = value {
             self.set(obj, value);
         }
     }
 
+    #[allow(dead_code)]
     fn set_if_none(&mut self, value: T) {
         if self.value.is_none() {
             self.value = Some(value);
@@ -92,10 +94,10 @@ impl Field {
         ctx: &Context,
         index: usize,
         field: &syn::Field,
-        attrs: Option<&Variant>,
+        _attrs: Option<&Variant>,
     ) -> Self {
         let mut set_name = Attr::none(ctx, RENAME);
-        let mut get_name = Attr::none(ctx, RENAME);
+        let get_name = Attr::none(ctx, RENAME);
 
         let mut skip = BoolAttr::none(ctx, SKIP);
         let mut label = BoolAttr::none(ctx, LABEL);
@@ -195,7 +197,7 @@ impl Container {
     /// Извлечение атрибутов элемента
     pub fn from_ast(ctx: &Context, input: &DeriveInput) -> Self {
         let mut set_name = Attr::none(ctx, RENAME);
-        let mut get_name = Attr::none(ctx, RENAME);
+        let get_name = Attr::none(ctx, RENAME);
 
         for meta_input in input
             .attrs
@@ -234,13 +236,15 @@ impl Container {
     }
 }
 
+#[allow(dead_code)]
 pub struct Variant {
     name: Name,
 }
 
 impl<'a> Variant {
+    #[allow(dead_code)]
     pub fn from_ast(ctx: &'a Context, variant: &'a syn::Variant) -> Self {
-        let mut get_name = Attr::none(ctx, RENAME);
+        let get_name = Attr::none(ctx, RENAME);
         let mut set_name = Attr::none(ctx, RENAME);
 
         for meta_item in variant
@@ -321,6 +325,7 @@ fn get_cypher_meta_inputs(
     }
 }
 
+#[allow(dead_code)]
 fn parse_lit_into_expr_path(
     cx: &Context,
     attr_name: Symbol,
