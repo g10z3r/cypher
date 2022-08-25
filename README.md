@@ -1,4 +1,4 @@
-<p align="center"><img height="200" src="assets/cypher_logo.png"></p>
+<p align="center"><img height="200" src="https://raw.githubusercontent.com/I0HuKc/cypher/main/assets/cypher_logo.png"></p>
 
 <h1 align="center">Neo4j Query Builder</h1>
 <p align="center">
@@ -21,7 +21,7 @@ A flexible and intuitive query builder for Neo4j and Cypher. Write queries in Ru
 ## Installation
 
 ```toml
-neo4j_cypher = { version = "0.1.2", features=["derive"] }
+neo4j_cypher = { version = "0.1", features=["derive"] }
 ```
 
 

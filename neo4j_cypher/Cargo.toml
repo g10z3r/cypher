@@ -1,11 +1,12 @@
 [package]
 name = "neo4j_cypher"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["I0HuKc <spaixel.info@gmail.com>"]
 keywords = ["neo4j", "cypher"]
 description = "A flexible and intuitive query builder for Neo4j and Cypher."
 documentation = "https://github.com/I0HuKc/cypher"
 license = "BSD-2-Clause"
+readme = "../README.md"
 edition = "2021"
 
 [dependencies]
