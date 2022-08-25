@@ -18,8 +18,8 @@ pub fn expand_derive_cypque(input: &mut syn::DeriveInput) -> Result<TokenStream,
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let output = quote!(
-        use cypher::query::{QueryTrait, Query};
-        use cypher::entity::{Entity, Node, Props, PropType, NodeTrait};
+        use neo4j_cypher::query::{QueryTrait, Query};
+        use neo4j_cypher::entity::{Entity, Node, Props, PropType, NodeTrait};
 
         impl #impl_generics NodeTrait for #node_ident_name #ty_generics #where_clause{
             fn node(&self, nv: &str)-> Node {
