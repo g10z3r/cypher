@@ -6,12 +6,25 @@ version = 3
 name = "cypher"
 version = "0.1.1"
 dependencies = [
- "cypher_derive",
+ "cypher_derive 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "cypher_derive"
 version = "0.1.1"
+dependencies = [
+ "proc-macro-error",
+ "proc-macro2",
+ "proc_macro_roids",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "cypher_derive"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "682fa99ef7007849ea1881253da233bb12a56972063e128f9b5954fb5a0ebe47"
 dependencies = [
  "proc-macro-error",
  "proc-macro2",
