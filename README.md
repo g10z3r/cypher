@@ -9,9 +9,6 @@
         <img src="https://img.shields.io/github/license/I0HuKc/cypher" alt="Licenses">
     </a>
     <a href="https://t.me/I0HuKc">
-        <img src="https://img.shields.io/github/repo-size/I0HuKc/cypher" alt="Size">
-    </a>
-    <a href="https://t.me/I0HuKc">
         <img src="https://img.shields.io/badge/I0HuKc-Telegram-blue" alt="Telegram">
     </a> 
 </p>
@@ -76,12 +73,48 @@ neo4j_cypher = { version = "0.1", features=["derive"] }
     Create relation:
 
     ```rust
+    use neo4j_cypher::entity::Relation;
+
     let rel = Relation::new(a1.node("n1"), a2.node("n2"), "SUBSCRIBE", None);
     ```
 
     Where `a1` and `a2` it's a structs with `CypQue` derive marco.
 
 Of course, instead of **None**, you can specify an object of `Props` or vector of `Label`.
+
+### Templates
+
+```toml
+neo4j_cypher = { version = "...", features=[ "derive", "templates" ] }
+```
+
+**Example of a request without using templates**
+
+    ```rust
+    use neo4j_cypher::query::match_query::CompOper;
+
+    let query = Query::init().r#match(&a1.node("n1").into(), false)
+        .r#where("name", CompOper::Equal, PropType::str("admin"))
+        .r#match(&a2.node("n2").into(), false)
+        .r#where("name", CompOper::Equal, PropType::str("dev"))
+        .return_many(vec!["n1", "n2"])
+        .finalize();
+    ```
+
+**Example request with using templates**
+
+    To include templates, you must add `templates` to the **features** dependency sections.
+
+
+    ```rust
+    let q = Query::init()
+        .r#match(&a1.node("n1").into(), false)
+        .where_eq_str("name", "admin")
+        .r#match(&a2.node("n2").into(), false)
+        .where_eq_str("name", "dev")
+        .return_many(vec!["n1", "n2"])
+        .finalize();
+    ```
 
 ### Example
 
@@ -91,7 +124,7 @@ Of course, instead of **None**, you can specify an object of `Props` or vector o
 use std::fmt::Display;
 
 use neo4j_cypher::query::match_query::CompOper;
-use neo4j_cypher::CypQueSet;
+use neo4j_cypher::CypQue;
 
 /// Example of access levels in the system
 #[derive(Debug, Clone)]
@@ -107,7 +140,7 @@ enum Perm {
 /// Field `secret` will be hidden;
 /// Field `perm` will be used as second a node label;
 /// Field `level` and `friends` will used a default value if they will be None;
-#[derive(Debug, Clone, CypQueSet)]
+#[derive(Debug, Clone, CypQue)]
 #[cypher(rename = "Profile")]
 struct Account {
     #[cypher(rename = "name")]

@@ -54,28 +54,34 @@ pub trait MatchActionTrait: 'static + ReturnTrait {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `SET n.prop = '...'`
+    #[cfg(feature = "templates")]
     fn set_str(&self, prop: &str, value: &str) -> Box<dyn ReturnTrait>;
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `SET n.prop = '...'`
+    #[cfg(feature = "templates")]
     fn set_str_var(&self, nv: &str, prop: &str, value: &str) -> Box<dyn ReturnTrait>;
 
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `SET n.prop = 0`
+    #[cfg(feature = "templates")]
     fn set_int(&self, prop: &str, value: isize) -> Box<dyn ReturnTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `SET n.prop = 0`
+    #[cfg(feature = "templates")]
     fn set_int_var(&self, nv: &str, prop: &str, value: isize) -> Box<dyn ReturnTrait>;
 
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `SET n.prop = true`
+    #[cfg(feature = "templates")]
     fn set_bool(&self, prop: &str, value: bool) -> Box<dyn ReturnTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `SET n.prop = true`
+    #[cfg(feature = "templates")]
     fn set_bool_var(&self, nv: &str, prop: &str, value: bool) -> Box<dyn ReturnTrait>;
 
     /// Pure **SET** query function with custom var.  
@@ -94,19 +100,23 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `AND n.prop = '...'`
+    #[cfg(feature = "templates")]
     fn and_eq_str(&mut self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `AND n.prop = '...'`
+    #[cfg(feature = "templates")]
     fn and_eq_str_var(&mut self, nv: &str, prop: &str, value: &str)
         -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `AND n.prop = 0`
+    #[cfg(feature = "templates")]
     fn and_eq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `AND n.prop = 0`
+    #[cfg(feature = "templates")]
     fn and_eq_int_var(
         &mut self,
         nv: &str,
@@ -116,10 +126,12 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `AND n.prop = true`
+    #[cfg(feature = "templates")]
     fn and_eq_bool(&mut self, prop: &str, value: bool) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `AND n.prop = true`
+    #[cfg(feature = "templates")]
     fn and_eq_bool_var(
         &mut self,
         nv: &str,
@@ -130,10 +142,12 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `AND n.prop > 0`
+    #[cfg(feature = "templates")]
     fn and_more_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `AND n.prop > 0`
+    #[cfg(feature = "templates")]
     fn and_more_int_var(
         &mut self,
         nv: &str,
@@ -144,10 +158,12 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `AND n.prop < 0`
+    #[cfg(feature = "templates")]
     fn and_less_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `AND n.prop < 0`
+    #[cfg(feature = "templates")]
     fn and_less_int_var(
         &mut self,
         nv: &str,
@@ -158,10 +174,12 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `AND n.prop >= 0`
+    #[cfg(feature = "templates")]
     fn and_moreq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `AND n.prop >= 0`
+    #[cfg(feature = "templates")]
     fn and_moreq_int_var(
         &mut self,
         nv: &str,
@@ -172,10 +190,12 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `AND n.prop <= 0`
+    #[cfg(feature = "templates")]
     fn and_leseq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `AND n.prop <= 0`
+    #[cfg(feature = "templates")]
     fn and_leseq_int_var(
         &mut self,
         nv: &str,
@@ -201,18 +221,26 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
     /// or if you want to use types other than `String`, `Int` `Bool`.
     fn or(&mut self, prop: &str, op: CompOper, eq: PropType) -> Box<dyn MatchConditionTrait>;
 
+    #[cfg(feature = "templates")]
     fn or_eq_str(&mut self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait>;
+    #[cfg(feature = "templates")]
     fn or_eq_str_var(&mut self, nv: &str, prop: &str, value: &str) -> Box<dyn MatchConditionTrait>;
 
+    #[cfg(feature = "templates")]
     fn or_eq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    #[cfg(feature = "templates")]
     fn or_eq_int_var(&mut self, nv: &str, prop: &str, value: isize)
         -> Box<dyn MatchConditionTrait>;
 
+    #[cfg(feature = "templates")]
     fn or_eq_bool(&mut self, prop: &str, value: bool) -> Box<dyn MatchConditionTrait>;
+    #[cfg(feature = "templates")]
     fn or_eq_bool_var(&mut self, nv: &str, prop: &str, value: bool)
         -> Box<dyn MatchConditionTrait>;
 
+    #[cfg(feature = "templates")]
     fn or_more_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    #[cfg(feature = "templates")]
     fn or_more_int_var(
         &mut self,
         nv: &str,
@@ -220,7 +248,9 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    #[cfg(feature = "templates")]
     fn or_less_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    #[cfg(feature = "templates")]
     fn or_less_int_var(
         &mut self,
         nv: &str,
@@ -228,7 +258,9 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    #[cfg(feature = "templates")]
     fn or_moreq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    #[cfg(feature = "templates")]
     fn or_moreq_int_var(
         &mut self,
         nv: &str,
@@ -236,7 +268,9 @@ pub trait MatchConditionTrait: 'static + MatchActionTrait + QueryTrait {
         value: isize,
     ) -> Box<dyn MatchConditionTrait>;
 
+    #[cfg(feature = "templates")]
     fn or_leseq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
+    #[cfg(feature = "templates")]
     fn or_leseq_int_var(
         &mut self,
         nv: &str,
@@ -329,26 +363,32 @@ impl MatchActionTrait for MatchConditionQuery {
         Box::new(ReturnQuery::new(state))
     }
 
+    #[cfg(feature = "templates")]
     fn set_str(&self, prop: &str, value: &str) -> Box<dyn ReturnTrait> {
         self.set(prop, PropType::str(value.to_string()))
     }
 
+    #[cfg(feature = "templates")]
     fn set_str_var(&self, nv: &str, prop: &str, value: &str) -> Box<dyn ReturnTrait> {
         self.set_var(nv, prop, PropType::str(value.to_string()))
     }
 
+    #[cfg(feature = "templates")]
     fn set_int(&self, prop: &str, value: isize) -> Box<dyn ReturnTrait> {
         self.set(prop, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn set_int_var(&self, nv: &str, prop: &str, value: isize) -> Box<dyn ReturnTrait> {
         self.set_var(nv, prop, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn set_bool(&self, prop: &str, value: bool) -> Box<dyn ReturnTrait> {
         self.set(prop, PropType::Bool(value))
     }
 
+    #[cfg(feature = "templates")]
     fn set_bool_var(&self, nv: &str, prop: &str, value: bool) -> Box<dyn ReturnTrait> {
         self.set_var(nv, prop, PropType::Bool(value))
     }
@@ -417,10 +457,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         Box::new(Self::new(self.nv.clone(), state))
     }
 
+    #[cfg(feature = "templates")]
     fn and_eq_str(&mut self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait> {
         self.and(prop, CompOper::Equal, PropType::str(value.to_string()))
     }
 
+    #[cfg(feature = "templates")]
     fn and_eq_str_var(
         &mut self,
         nv: &str,
@@ -430,10 +472,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.and_var(nv, prop, CompOper::Equal, PropType::str(value.to_string()))
     }
 
+    #[cfg(feature = "templates")]
     fn and_eq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.and(prop, CompOper::Equal, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_eq_int_var(
         &mut self,
         nv: &str,
@@ -443,10 +487,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.and_var(nv, prop, CompOper::Equal, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_eq_bool(&mut self, prop: &str, value: bool) -> Box<dyn MatchConditionTrait> {
         self.and(prop, CompOper::Equal, PropType::Bool(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_eq_bool_var(
         &mut self,
         nv: &str,
@@ -456,10 +502,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.and_var(nv, prop, CompOper::Equal, PropType::Bool(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_more_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.and(prop, CompOper::More, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_more_int_var(
         &mut self,
         nv: &str,
@@ -469,10 +517,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.and_var(nv, prop, CompOper::More, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_less_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.and(prop, CompOper::Less, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_less_int_var(
         &mut self,
         nv: &str,
@@ -482,10 +532,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.and_var(nv, prop, CompOper::Less, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_moreq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.and(prop, CompOper::MoreEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_moreq_int_var(
         &mut self,
         nv: &str,
@@ -495,10 +547,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.and_var(nv, prop, CompOper::MoreEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_leseq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.and(prop, CompOper::LessEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn and_leseq_int_var(
         &mut self,
         nv: &str,
@@ -508,18 +562,22 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.and_var(nv, prop, CompOper::LessEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_eq_str(&mut self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait> {
         self.or(prop, CompOper::Equal, PropType::str(value.to_string()))
     }
 
+    #[cfg(feature = "templates")]
     fn or_eq_str_var(&mut self, nv: &str, prop: &str, value: &str) -> Box<dyn MatchConditionTrait> {
         self.or_var(nv, prop, CompOper::Equal, PropType::str(value.to_string()))
     }
 
+    #[cfg(feature = "templates")]
     fn or_eq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.or(prop, CompOper::Equal, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_eq_int_var(
         &mut self,
         nv: &str,
@@ -529,10 +587,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.or_var(nv, prop, CompOper::Equal, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_eq_bool(&mut self, prop: &str, value: bool) -> Box<dyn MatchConditionTrait> {
         self.or(prop, CompOper::Equal, PropType::Bool(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_eq_bool_var(
         &mut self,
         nv: &str,
@@ -542,10 +602,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.or_var(nv, prop, CompOper::Equal, PropType::Bool(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_more_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.or(prop, CompOper::More, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_more_int_var(
         &mut self,
         nv: &str,
@@ -555,10 +617,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.or_var(nv, prop, CompOper::More, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_less_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.or(prop, CompOper::Less, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_less_int_var(
         &mut self,
         nv: &str,
@@ -568,10 +632,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.or_var(nv, prop, CompOper::Less, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_moreq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.or(prop, CompOper::MoreEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_moreq_int_var(
         &mut self,
         nv: &str,
@@ -581,10 +647,12 @@ impl MatchConditionTrait for MatchConditionQuery {
         self.or_var(nv, prop, CompOper::MoreEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_leseq_int(&mut self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.or(prop, CompOper::LessEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn or_leseq_int_var(
         &mut self,
         nv: &str,
@@ -626,34 +694,42 @@ pub trait MatchTrait: 'static {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `WHERE n.prop = '...'`
+    #[cfg(feature = "templates")]
     fn where_eq_str(&self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `WHERE n.prop = '...'`
+    #[cfg(feature = "templates")]
     fn where_eq_str_var(&self, nv: &str, prop: &str, value: &str) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `WHERE n.prop = 0`
+    #[cfg(feature = "templates")]
     fn where_eq_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `WHERE n.prop = 0`
+    #[cfg(feature = "templates")]
     fn where_eq_int_var(&self, nv: &str, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `WHERE n.prop = true`
+    #[cfg(feature = "templates")]
     fn where_eq_bool(&self, prop: &str, value: bool) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `WHERE n.prop = true`
+    #[cfg(feature = "templates")]
     fn where_eq_bool_var(&self, nv: &str, prop: &str, value: bool) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `WHERE n.prop > 0`
+    #[cfg(feature = "templates")]
     fn where_more_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `WHERE n.prop > 0`
+    #[cfg(feature = "templates")]
     fn where_more_int_var(
         &self,
         nv: &str,
@@ -663,10 +739,12 @@ pub trait MatchTrait: 'static {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `WHERE n.prop < 0`
+    #[cfg(feature = "templates")]
     fn where_less_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `WHERE n.prop < 0`
+    #[cfg(feature = "templates")]
     fn where_less_int_var(
         &self,
         nv: &str,
@@ -676,10 +754,12 @@ pub trait MatchTrait: 'static {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `WHERE n.prop >= 0`
+    #[cfg(feature = "templates")]
     fn where_moreq_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `WHERE n.prop >= 0`
+    #[cfg(feature = "templates")]
     fn where_moreq_int_var(
         &self,
         nv: &str,
@@ -689,10 +769,12 @@ pub trait MatchTrait: 'static {
     /// A short use case for the where function, assuming the following final result:
     ///
     /// `WHERE n.prop <= 0`
+    #[cfg(feature = "templates")]
     fn where_leseq_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait>;
     /// A short use case for the where function with custom var, assuming the following final result:
     ///
     /// `WHERE n.prop <= 0`
+    #[cfg(feature = "templates")]
     fn where_leseq_int_var(
         &self,
         nv: &str,
@@ -727,30 +809,38 @@ impl MatchTrait for MatchQuery {
 
     /* Equal */
 
+    #[cfg(feature = "templates")]
     fn where_eq_str(&self, prop: &str, value: &str) -> Box<dyn MatchConditionTrait> {
         self.r#where(prop, CompOper::Equal, PropType::str(value.to_string()))
     }
+    #[cfg(feature = "templates")]
     fn where_eq_str_var(&self, nv: &str, prop: &str, value: &str) -> Box<dyn MatchConditionTrait> {
         self.where_var(nv, prop, CompOper::Equal, PropType::str(value.to_string()))
     }
+    #[cfg(feature = "templates")]
     fn where_eq_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.r#where(prop, CompOper::Equal, PropType::int(value))
     }
+    #[cfg(feature = "templates")]
     fn where_eq_int_var(&self, nv: &str, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.where_var(nv, prop, CompOper::Equal, PropType::int(value))
     }
+    #[cfg(feature = "templates")]
     fn where_eq_bool(&self, prop: &str, value: bool) -> Box<dyn MatchConditionTrait> {
         self.r#where(prop, CompOper::Equal, PropType::Bool(value))
     }
+    #[cfg(feature = "templates")]
     fn where_eq_bool_var(&self, nv: &str, prop: &str, value: bool) -> Box<dyn MatchConditionTrait> {
         self.where_var(nv, prop, CompOper::Equal, PropType::Bool(value))
     }
 
     /* More */
 
+    #[cfg(feature = "templates")]
     fn where_more_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.r#where(prop, CompOper::More, PropType::int(value))
     }
+    #[cfg(feature = "templates")]
     fn where_more_int_var(
         &self,
         nv: &str,
@@ -762,9 +852,11 @@ impl MatchTrait for MatchQuery {
 
     /* Less */
 
+    #[cfg(feature = "templates")]
     fn where_less_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.r#where(prop, CompOper::Less, PropType::int(value))
     }
+    #[cfg(feature = "templates")]
     fn where_less_int_var(
         &self,
         nv: &str,
@@ -776,9 +868,11 @@ impl MatchTrait for MatchQuery {
 
     /* MoreEqual */
 
+    #[cfg(feature = "templates")]
     fn where_moreq_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.r#where(prop, CompOper::MoreEqual, PropType::int(value))
     }
+    #[cfg(feature = "templates")]
     fn where_moreq_int_var(
         &self,
         nv: &str,
@@ -790,10 +884,12 @@ impl MatchTrait for MatchQuery {
 
     /* LessEqual */
 
+    #[cfg(feature = "templates")]
     fn where_leseq_int(&self, prop: &str, value: isize) -> Box<dyn MatchConditionTrait> {
         self.r#where(prop, CompOper::LessEqual, PropType::int(value))
     }
 
+    #[cfg(feature = "templates")]
     fn where_leseq_int_var(
         &self,
         nv: &str,

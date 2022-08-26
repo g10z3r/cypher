@@ -13,4 +13,5 @@ edition = "2021"
 cypher_derive = { version = "0.1", optional = true }
 
 [features]
-derive = ["cypher_derive"]
+derive = [ "cypher_derive" ]
+templates = []
