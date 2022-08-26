@@ -1,6 +1,6 @@
 [package]
 name = "cypher_derive"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["I0HuKc <spaixel.info@gmail.com>"]
 keywords = ["neo4j", "cypher"]
 description = "A flexible and intuitive query builder for Neo4j and Cypher."

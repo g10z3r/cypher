@@ -18,7 +18,7 @@ A flexible and intuitive query builder for Neo4j and Cypher. Write queries in Ru
 ## Installation
 
 ```toml
-neo4j_cypher = { version = "0.1", features=["derive"] }
+neo4j_cypher = { version = "0.2", features=["derive"] }
 ```
 
 
