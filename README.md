@@ -90,31 +90,31 @@ neo4j_cypher = { version = "...", features=[ "derive", "templates" ] }
 
 **Example of a request without using templates**
 
-    ```rust
-    use neo4j_cypher::query::match_query::CompOper;
+```rust
+use neo4j_cypher::query::match_query::CompOper;
 
-    let query = Query::init().r#match(&a1.node("n1").into(), false)
-        .r#where("name", CompOper::Equal, PropType::str("admin"))
-        .r#match(&a2.node("n2").into(), false)
-        .r#where("name", CompOper::Equal, PropType::str("dev"))
-        .return_many(vec!["n1", "n2"])
-        .finalize();
-    ```
+let query = Query::init().r#match(&a1.node("n1").into(), false)
+    .r#where("name", CompOper::Equal, PropType::str("admin"))
+    .r#match(&a2.node("n2").into(), false)
+    .r#where("name", CompOper::Equal, PropType::str("dev"))
+    .return_many(vec!["n1", "n2"])
+    .finalize();
+```
 
 **Example request with using templates**
 
     To include templates, you must add `templates` to the **features** dependency sections.
 
 
-    ```rust
-    let q = Query::init()
-        .r#match(&a1.node("n1").into(), false)
-        .where_eq_str("name", "admin")
-        .r#match(&a2.node("n2").into(), false)
-        .where_eq_str("name", "dev")
-        .return_many(vec!["n1", "n2"])
-        .finalize();
-    ```
+```rust
+let q = Query::init()
+    .r#match(&a1.node("n1").into(), false)
+    .where_eq_str("name", "admin")
+    .r#match(&a2.node("n2").into(), false)
+    .where_eq_str("name", "dev")
+    .return_many(vec!["n1", "n2"])
+    .finalize();
+```
 
 ### Example
 
