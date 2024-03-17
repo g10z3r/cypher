@@ -1,6 +1,6 @@
 [package]
 name = "neo4j_cypher"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["I0HuKc <spaixel.info@gmail.com>"]
 keywords = ["neo4j", "cypher"]
 description = "A flexible and intuitive query builder for Neo4j and Cypher."
