@@ -6,10 +6,10 @@
         <img src="https://img.shields.io/crates/v/neo4j_cypher" alt="Licenses">
     </a>
     <a href="https://opensource.org/licenses/BSD-3-Clause">
-        <img src="https://img.shields.io/github/license/I0HuKc/cypher" alt="Licenses">
+        <img src="https://img.shields.io/github/license/g10z3r/cypher" alt="Licenses">
     </a>
-    <a href="https://t.me/I0HuKc">
-        <img src="https://img.shields.io/badge/I0HuKc-Telegram-blue" alt="Telegram">
+    <a href="https://t.me/g">
+        <img src="https://img.shields.io/badge/g10z3r-reddit-orange" alt="X">
     </a> 
 </p>
 
